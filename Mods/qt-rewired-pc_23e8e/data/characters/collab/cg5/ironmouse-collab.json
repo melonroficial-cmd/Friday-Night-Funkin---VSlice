@@ -1,0 +1,202 @@
+{
+  "version": "1.0.0",
+  "name": "Ironmouse (GO GO GO)",
+  "assetPath": "shared:characters/go-go-go/ironmouse",
+  "renderType": "multianimateatlas",
+  "offsets": [-25, 50],
+  "cameraOffsets": [0, 20],
+  "healthIcon": {
+    "id": "ironmouse-collab",
+    "scale": 1.2,
+    "offsets": [-10, -2]
+  },
+  "animations": [
+    {
+      "name": "idle",
+      "prefix": "Idle",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singLEFT",
+      "prefix": "Left",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singDOWN",
+      "prefix": "Down",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singUP",
+      "prefix": "Up",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singRIGHT",
+      "prefix": "Right",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singLEFTmiss",
+      "prefix": "Left Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singDOWNmiss",
+      "prefix": "Down Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singUPmiss",
+      "prefix": "Up Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singRIGHTmiss",
+      "prefix": "Right Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singLEFT-beautiful",
+      "prefix": "Left Beautiful",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singDOWN-beautiful",
+      "prefix": "Down Beautiful",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singUP-beautiful",
+      "prefix": "Up Beautiful",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singRIGHT-beautiful",
+      "prefix": "Right Beautiful",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singLEFTmiss-beautiful",
+      "prefix": "Left Miss Beautiful",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singDOWNmiss-beautiful",
+      "prefix": "Down Miss Beautiful",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singUPmiss-beautiful",
+      "prefix": "Up Miss Beautiful",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singRIGHTmiss-beautiful",
+      "prefix": "Right Miss Beautiful",
+      "offsets": [0, 0]
+    },
+    {
+      "frameRate": 26,
+      "name": "mistakeAnimation",
+      "prefix": "For one more mistake",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "idle-cool",
+      "prefix": "Idle Cool",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singLEFT-cool",
+      "prefix": "Left Cool",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singDOWN-cool",
+      "prefix": "Down Cool",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singUP-cool",
+      "prefix": "Up Cool",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singRIGHT-cool",
+      "prefix": "Right Cool",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singDOWN-go",
+      "prefix": "Down Go",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singLEFTmiss-cool",
+      "prefix": "Left Miss Cool",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singDOWNmiss-cool",
+      "prefix": "Down Miss Cool",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singUPmiss-cool",
+      "prefix": "Up Miss Cool",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singRIGHTmiss-cool",
+      "prefix": "Right Miss Cool",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "danceLeft-1",
+      "prefix": "Dance Left 1",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "danceRight-1",
+      "prefix": "Dance Right 1",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "danceLeft-2",
+      "prefix": "Dance Left 2",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "danceRight-2",
+      "prefix": "Dance Right 2",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "danceLeftCool-1",
+      "prefix": "Dance Left Cool 1",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "danceRightCool-1",
+      "prefix": "Dance Right Cool 1",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "danceLeftCool-2",
+      "prefix": "Dance Left Cool 2",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "danceRightCool-2",
+      "prefix": "Dance Right Cool 2",
+      "offsets": [0, 0]
+    },
+    {
+      "frameRate": 26,
+      "name": "stayAnimation",
+      "prefix": "You need to stay",
+      "offsets": [0, 0]
+    }
+  ]
+}

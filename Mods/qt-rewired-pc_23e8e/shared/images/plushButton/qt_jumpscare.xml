@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="qt_jumpscare.png">
+	<!-- Created with Adobe Animate version 22.0.3.179 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="boo0000" x="4776" y="1329" width="910" height="294" frameX="-546" frameY="-1103" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0001" x="6016" y="1310" width="1340" height="1169" frameX="-212" frameY="-408" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0002" x="1878" y="1449" width="1440" height="1445" frameX="-219" frameY="-24" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0003" x="1878" y="1449" width="1440" height="1445" frameX="-219" frameY="-24" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0004" x="1878" y="1449" width="1440" height="1445" frameX="-219" frameY="-24" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0005" x="1632" y="5" width="1728" height="1439" frameX="-54" frameY="-69" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0006" x="1632" y="5" width="1728" height="1439" frameX="-54" frameY="-69" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0007" x="1632" y="5" width="1728" height="1439" frameX="-54" frameY="-69" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0008" x="1632" y="5" width="1728" height="1439" frameX="-54" frameY="-69" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0009" x="5" y="5" width="1622" height="1571" frameX="-98" frameY="0" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0010" x="5" y="5" width="1622" height="1571" frameX="-98" frameY="0" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0011" x="5" y="5" width="1622" height="1571" frameX="-98" frameY="0" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0012" x="5" y="5" width="1622" height="1571" frameX="-98" frameY="0" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0013" x="5" y="5" width="1622" height="1571" frameX="-98" frameY="0" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0014" x="5" y="5" width="1622" height="1571" frameX="-98" frameY="0" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0015" x="5" y="5" width="1622" height="1571" frameX="-98" frameY="0" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0016" x="5" y="5" width="1622" height="1571" frameX="-98" frameY="0" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0017" x="5" y="5" width="1622" height="1571" frameX="-98" frameY="0" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0018" x="5" y="5" width="1622" height="1571" frameX="-98" frameY="0" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0019" x="5" y="1581" width="1868" height="1364" frameX="0" frameY="-143" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0020" x="5" y="1581" width="1868" height="1364" frameX="0" frameY="-143" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0021" x="3323" y="1449" width="1448" height="1383" frameX="-235" frameY="-75" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0022" x="3323" y="1449" width="1448" height="1383" frameX="-235" frameY="-75" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0023" x="3323" y="1449" width="1448" height="1383" frameX="-235" frameY="-75" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0024" x="3323" y="1449" width="1448" height="1383" frameX="-235" frameY="-75" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0025" x="3365" y="5" width="1322" height="1318" frameX="-342" frameY="-67" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0026" x="3365" y="5" width="1322" height="1318" frameX="-342" frameY="-67" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0027" x="3365" y="5" width="1322" height="1318" frameX="-342" frameY="-67" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0028" x="3365" y="5" width="1322" height="1318" frameX="-342" frameY="-67" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0029" x="4692" y="5" width="1319" height="1319" frameX="-361" frameY="-41" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0030" x="4692" y="5" width="1319" height="1319" frameX="-361" frameY="-41" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0031" x="4692" y="5" width="1319" height="1319" frameX="-361" frameY="-41" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0032" x="4692" y="5" width="1319" height="1319" frameX="-361" frameY="-41" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0033" x="6016" y="5" width="1278" height="1300" frameX="-389" frameY="-119" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0034" x="6016" y="5" width="1278" height="1300" frameX="-389" frameY="-119" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0035" x="6016" y="5" width="1278" height="1300" frameX="-389" frameY="-119" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0036" x="6016" y="5" width="1278" height="1300" frameX="-389" frameY="-119" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0037" x="4776" y="2484" width="1366" height="1041" frameX="-397" frameY="-383" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0038" x="4776" y="2484" width="1366" height="1041" frameX="-397" frameY="-383" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0039" x="4776" y="2484" width="1366" height="1041" frameX="-397" frameY="-383" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0040" x="4776" y="2484" width="1366" height="1041" frameX="-397" frameY="-383" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0041" x="6147" y="2484" width="1288" height="1066" frameX="-539" frameY="-394" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0042" x="6147" y="2484" width="1288" height="1066" frameX="-539" frameY="-394" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0043" x="6147" y="2484" width="1288" height="1066" frameX="-539" frameY="-394" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0044" x="1878" y="2899" width="1354" height="642" frameX="-634" frameY="-753" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0045" x="1878" y="2899" width="1354" height="642" frameX="-634" frameY="-753" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0046" x="1878" y="2899" width="1354" height="642" frameX="-634" frameY="-753" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0047" x="1878" y="2899" width="1354" height="642" frameX="-634" frameY="-753" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0048" x="1878" y="2899" width="1354" height="642" frameX="-634" frameY="-753" frameWidth="1988" frameHeight="1577"/>
+	<SubTexture name="boo0049" x="5691" y="1329" width="131" height="310" frameX="-1342" frameY="-1068" frameWidth="1988" frameHeight="1577"/>
+</TextureAtlas>

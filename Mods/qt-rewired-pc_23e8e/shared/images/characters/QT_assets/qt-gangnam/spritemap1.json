@@ -1,0 +1,94 @@
+{
+  "ATLAS": {
+    "SPRITES": [
+      {
+        "SPRITE": {
+          "name": "0",
+          "x": 2,
+          "y": 336,
+          "w": 121,
+          "h": 201,
+          "rotated": false
+        }
+      },
+      {
+        "SPRITE": {
+          "name": "1",
+          "x": 2,
+          "y": 2,
+          "w": 267,
+          "h": 333,
+          "rotated": false
+        }
+      },
+      {
+        "SPRITE": {
+          "name": "2",
+          "x": 270,
+          "y": 274,
+          "w": 176,
+          "h": 178,
+          "rotated": false
+        }
+      },
+      {
+        "SPRITE": {
+          "name": "3",
+          "x": 268,
+          "y": 453,
+          "w": 128,
+          "h": 161,
+          "rotated": false
+        }
+      },
+      {
+        "SPRITE": {
+          "name": "4",
+          "x": 124,
+          "y": 336,
+          "w": 143,
+          "h": 161,
+          "rotated": false
+        }
+      },
+      {
+        "SPRITE": {
+          "name": "5",
+          "x": 124,
+          "y": 498,
+          "w": 126,
+          "h": 133,
+          "rotated": false
+        }
+      },
+      {
+        "SPRITE": {
+          "name": "6",
+          "x": 270,
+          "y": 2,
+          "w": 181,
+          "h": 271,
+          "rotated": false
+        }
+      },
+      {
+        "SPRITE": {
+          "name": "7",
+          "x": 397,
+          "y": 453,
+          "w": 72,
+          "h": 161,
+          "rotated": false
+        }
+      }
+    ]
+  },
+  "meta": {
+    "app": "Adobe Animate (Better TA Extension)",
+    "version": "19.2.0.405",
+    "image": "spritemap1.png",
+    "format": "RGBA8888",
+    "size": { "w": 471, "h": 633 },
+    "resolution": "1"
+  }
+}

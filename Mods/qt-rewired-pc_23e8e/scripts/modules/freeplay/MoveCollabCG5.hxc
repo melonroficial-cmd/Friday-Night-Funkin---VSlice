@@ -1,0 +1,78 @@
+import funkin.modding.module.Module;
+import funkin.ui.freeplay.FreeplayState;
+import funkin.data.story.level.LevelRegistry;
+
+using Lambda;
+
+class MoveCollabCG5 extends Module
+{
+  public function new()
+  {
+    super('rewired-cg5-collab-freeplay', 1, {state: FreeplayState});
+  }
+
+  public override function onSubStateOpenEnd(event)
+  {
+    super.onSubStateOpenEnd(event);
+
+    if (!event.targetState is FreeplayState) return;
+    insertAfterWeek('QTWeek', ['CG5Collab']);
+  }
+
+  // everybody say thanks comedy lost
+  function insertAfterWeek(weekName:String, songs:Array<String>)
+  {
+    var state:FreeplayState = FlxG.state.subState;
+    var removedSongs:Array<FreeplaySongData> = state.songs.filter((song:FreeplaySongData) -> {
+      return song != null && songs.contains(song?.levelId);
+    });
+    var songArrayFiltered:Array<FreeplaySongData> = state.songs.filter((song:FreeplaySongData) -> {
+      return song?.levelId == weekName;
+    });
+    if (removedSongs.length == 0 || songArrayFiltered.length == 0)
+    {
+      trace('Unable to reorder songs. Using default order.');
+      return;
+    }
+    for (song in removedSongs)
+      state.songs.remove(song);
+    var songIndex:Int = state.songs.lastIndexOf(songArrayFiltered[songArrayFiltered.length - 1]) + 1;
+    for (index => item in removedSongs)
+      state.songs.insert(songIndex + index, item);
+    var removedCapsules:Array<SongMenuItem> = state.grpCapsules.members.filter((capsule:SongMenuItem) -> {
+      return capsule?.freeplayData != null && songs.contains(capsule.freeplayData.levelId);
+    });
+    var capsuleArrayFiltered:Array<SongMenuItem> = state.grpCapsules.members.filter((capsule:SongMenuItem) -> {
+      return capsule?.freeplayData?.levelId == weekName;
+    });
+    if (removedCapsules.length == 0 || capsuleArrayFiltered.length == 0)
+    {
+      trace('No capsules found to reorder.');
+      return;
+    }
+    for (capsule in removedCapsules)
+      state.grpCapsules.members.remove(capsule);
+    var songIndex:Int = state.grpCapsules.members.lastIndexOf(capsuleArrayFiltered[capsuleArrayFiltered.length - 1]) + 1;
+    for (index => item in removedCapsules)
+      state.grpCapsules.members.insert(songIndex + index, item);
+    state.grpCapsules.forEachAlive((funnyMenu:SongMenuItem) -> {
+      var curIndex = state.grpCapsules.members.indexOf(funnyMenu);
+      funnyMenu.initPosition(FlxG.width, 0);
+      funnyMenu.targetPos.x = funnyMenu.x;
+      funnyMenu.ID = curIndex;
+      funnyMenu.index = curIndex + 1;
+      if (state.forceSkipIntro || state.fromCharSelect) funnyMenu.forcePosition();
+      else
+        funnyMenu.initJumpIn(0, true);
+    });
+    if (FreeplayState.rememberedSongId != null)
+    {
+      state.curSelected = state.grpCapsules.findIndex((capsule:SongMenuItem) -> {
+        if (capsule == null) return false;
+        return capsule.freeplayData?.data?.id == FreeplayState.rememberedSongId;
+      });
+    }
+    if (state.curSelected == -1) state.curSelected = 0;
+    state.changeSelection();
+  }
+}

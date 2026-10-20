@@ -1,0 +1,9 @@
+{
+  "version": "1.0.0",
+  "name": "GO GO GO",
+  "artists": ["CG5", "Ironmouse"],
+  "albumOSTName": "COLLAB OST",
+  "albumArtAsset": "freeplay/albumRoll/go_go_go",
+  "albumTitleAsset": "freeplay/albumRoll/go-go-go-text",
+  "albumTitleOffsets": [-12.5, 5]
+}

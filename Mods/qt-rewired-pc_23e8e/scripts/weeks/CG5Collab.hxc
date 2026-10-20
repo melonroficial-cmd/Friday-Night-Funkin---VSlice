@@ -1,0 +1,14 @@
+import funkin.ui.story.Level;
+
+class CG5CollabLevel extends Level
+{
+  function new()
+  {
+    super('CG5Collab');
+  }
+
+  override function getSongDisplayNames(difficultyId:String):Array<String>
+  {
+    return ["GO GO GO", "(feat. Ironmouse)"];
+  }
+}

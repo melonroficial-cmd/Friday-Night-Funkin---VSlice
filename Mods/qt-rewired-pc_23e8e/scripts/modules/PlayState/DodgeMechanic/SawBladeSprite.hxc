@@ -1,0 +1,22 @@
+package rewired.modules.playstate.dodgemechanic;
+
+import flixel.math.FlxPoint;
+import flixel.FlxSprite;
+import funkin.graphics.FunkinSprite;
+import funkin.play.PlayState;
+import flixel.util.FlxTimer;
+import flixel.FlxG;
+import funkin.audio.FunkinSound;
+import funkin.Conductor;
+import funkin.Preferences;
+
+class SawBladeSprite extends FunkinSprite
+{
+  public function new(x:Float, y:Float)
+  {
+    super(x, y);
+    loadTextureAtlas("saw_mechanic/saw_assets", "shared");
+    animation.addBySymbolIndices("saw anim attack", [for (i in 19...39) i], this.getDefaultSymbol(), 24, false);
+    animation.addBySymbolIndices("saw anim alert", [for (i in 0...19) i], this.getDefaultSymbol(), 24, false);
+  }
+}

@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="qt_makeship.png">
+	<!-- Created with Adobe Animate version 22.0.3.179 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="idle0000" x="4540" y="830" width="810" height="817" frameX="-12" frameY="-3" frameWidth="849" frameHeight="820"/>
+	<SubTexture name="idle0001" x="4540" y="830" width="810" height="817" frameX="-12" frameY="-3" frameWidth="849" frameHeight="820"/>
+	<SubTexture name="idle0002" x="4540" y="830" width="810" height="817" frameX="-12" frameY="-3" frameWidth="849" frameHeight="820"/>
+	<SubTexture name="idle0003" x="4540" y="830" width="810" height="817" frameX="-12" frameY="-3" frameWidth="849" frameHeight="820"/>
+	<SubTexture name="idle0004" x="4540" y="830" width="810" height="817" frameX="-12" frameY="-3" frameWidth="849" frameHeight="820"/>
+	<SubTexture name="idle0005" x="4540" y="830" width="810" height="817" frameX="-12" frameY="-3" frameWidth="849" frameHeight="820"/>
+	<SubTexture name="idle0006" x="4540" y="830" width="810" height="817" frameX="-12" frameY="-3" frameWidth="849" frameHeight="820"/>
+	<SubTexture name="idle0007" x="4540" y="830" width="810" height="817" frameX="-12" frameY="-3" frameWidth="849" frameHeight="820"/>
+	<SubTexture name="idle0008" x="3686" y="1005" width="849" height="820"/>
+	<SubTexture name="idle0009" x="3719" y="5" width="849" height="820"/>
+	<SubTexture name="idle0010" x="3719" y="5" width="849" height="820"/>
+	<SubTexture name="idle0011" x="3719" y="5" width="849" height="820"/>
+	<SubTexture name="idle0012" x="3719" y="5" width="849" height="820"/>
+	<SubTexture name="idle0013" x="3719" y="5" width="849" height="820"/>
+	<SubTexture name="idle0014" x="3719" y="5" width="849" height="820"/>
+	<SubTexture name="idle0015" x="3719" y="5" width="849" height="820"/>
+	<SubTexture name="select0000" x="2789" y="1005" width="892" height="990" frameX="-24" frameY="-5" frameWidth="943" frameHeight="995"/>
+	<SubTexture name="select0001" x="2789" y="1005" width="892" height="990" frameX="-24" frameY="-5" frameWidth="943" frameHeight="995"/>
+	<SubTexture name="select0002" x="2810" y="5" width="904" height="995" frameX="-12" frameY="0" frameWidth="943" frameHeight="995"/>
+	<SubTexture name="select0003" x="2810" y="5" width="904" height="995" frameX="-12" frameY="0" frameWidth="943" frameHeight="995"/>
+	<SubTexture name="select0004" x="1889" y="5" width="916" height="993" frameX="0" frameY="-2" frameWidth="943" frameHeight="995"/>
+	<SubTexture name="select0005" x="1889" y="5" width="916" height="993" frameX="0" frameY="-2" frameWidth="943" frameHeight="995"/>
+	<SubTexture name="select0006" x="1889" y="1003" width="895" height="992" frameX="-21" frameY="-3" frameWidth="943" frameHeight="995"/>
+	<SubTexture name="select0007" x="1889" y="1003" width="895" height="992" frameX="-21" frameY="-3" frameWidth="943" frameHeight="995"/>
+	<SubTexture name="select0008" x="932" y="1005" width="919" height="990" frameX="-24" frameY="-5" frameWidth="943" frameHeight="995"/>
+	<SubTexture name="select0009" x="932" y="1005" width="919" height="990" frameX="-24" frameY="-5" frameWidth="943" frameHeight="995"/>
+	<SubTexture name="select0010" x="953" y="5" width="931" height="995" frameX="-12" frameY="0" frameWidth="943" frameHeight="995"/>
+	<SubTexture name="select0011" x="953" y="5" width="931" height="995" frameX="-12" frameY="0" frameWidth="943" frameHeight="995"/>
+	<SubTexture name="select0012" x="5" y="5" width="943" height="993" frameX="0" frameY="-2" frameWidth="943" frameHeight="995"/>
+	<SubTexture name="select0013" x="5" y="5" width="943" height="993" frameX="0" frameY="-2" frameWidth="943" frameHeight="995"/>
+	<SubTexture name="select0014" x="5" y="1003" width="922" height="992" frameX="-21" frameY="-3" frameWidth="943" frameHeight="995"/>
+	<SubTexture name="select0015" x="5" y="1003" width="922" height="992" frameX="-21" frameY="-3" frameWidth="943" frameHeight="995"/>
+</TextureAtlas>

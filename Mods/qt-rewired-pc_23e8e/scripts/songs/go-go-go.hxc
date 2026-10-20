@@ -1,0 +1,782 @@
+import funkin.play.song.Song;
+import funkin.play.PlayState;
+import flixel.tweens.FlxTween;
+import flixel.util.FlxColor;
+import funkin.play.character.CharacterType;
+import funkin.util.SongSequence;
+import flixel.FlxSprite;
+import funkin.graphics.FunkinSprite;
+import flixel.tweens.FlxEase;
+import flixel.util.FlxTimer;
+import flixel.FlxG;
+import openfl.display.BlendMode;
+import flixel.text.FlxText;
+import funkin.Paths;
+import funkin.play.PauseSubState;
+import funkin.Conductor;
+import funkin.audio.FunkinSound;
+import funkin.save.Save;
+import funkin.play.PlayStatePlaylist;
+import funkin.play.Countdown;
+import funkin.Preferences;
+
+class GoGoGoSong extends Song
+{
+  var introFadeDuration:Float = 6.8;
+  var hasHiddenStrums:Bool;
+  var coverScreen:FunkinSprite;
+
+  var horsePNG:FunkinSprite;
+
+  var collabLogo:FunkinSprite;
+  var cg5Logo:FunkinSprite;
+
+  var rewiredLogoStartScale:Float = 2.0;
+  var rewiredLogoEndScale:Float = 0.88;
+  var rewiredLogoShrinkDuration:Float = 2.0;
+
+  var rewiredLogoTargetX:Float = -175;
+  var rewiredLogoMoveDuration:Float = 2.2;
+
+  var collabLogoX:Float = 695;
+  var collabLogoY:Float = 325;
+  var collabLogoFadeInDuration:Float = 0.4;
+
+  var cg5LogoStartX:Float = 800;
+  var cg5LogoEndX:Float = 865;
+  var cg5LogoY:Float = 230;
+  var cg5LogoMoveDuration:Float = 2.5;
+  var cg5LogoFadeInDuration:Float = 1.6;
+
+  var collabDelay:Float = 0.9;
+  var cg5LogoAppearDelay:Float = 0.9;
+  var outroHoldDuration:Float = 0.4;
+
+  var outroFallFadeDuration:Float = 2.5;
+  var outroTotalDuration:Float = 8.8;
+
+  var outroTimer:FlxTimer;
+  var logoFallTimer:FlxTimer;
+  var outroFlashSpr:FunkinSprite;
+
+  var hasDoneOutro:Bool;
+  var sequence:SongSequence;
+  var introGhostTapEndBeat:Int = 16;
+
+  var clapSfx:FunkinSound;
+  var outroSfx:FunkinSound;
+
+  var hasPlayedCutscene:Bool;
+  var lang:String;
+  var introDuration:Float;
+  var introTimeline:Array<Dynamic>;
+  var introLines:Array<FunkinSound> = [];
+  var pauseCreditCategory:String = 'Arrangement';
+  var pauseMetadataRowHeight:Float = 32;
+  var isPauseCreditHooked:Bool = false;
+
+  public function new()
+  {
+    super('go-go-go');
+  }
+
+  override public function isSongNew(currentDifficulty:String, currentVariation:String):Bool
+  {
+    return !Save.instance.hasBeatenSong(this.id, null, this.variation);
+  }
+
+  override function onCreate(e)
+  {
+    super.onCreate(e);
+    if (PlayState.instance == null || PlayState.instance.currentStage == null) return;
+
+    hasHiddenStrums = false;
+    hasDoneOutro = false;
+    hasPlayedCutscene = false;
+    lang = Save.instance.modOptions.get('qt-rewiredLang');
+
+    var intro:Dynamic = getIntroData(lang);
+    introDuration = intro.duration;
+    introTimeline = intro.timeline;
+
+    clapSfx = FunkinSound.load(Paths.sound('gameplay/collabClapClap'), 1.0);
+    outroSfx = FunkinSound.load(Paths.sound('gameplay/collabSongEnd'), 1.0);
+
+    clapSfx.pitch = PlayState.instance.playbackRate;
+    outroSfx.pitch = PlayState.instance.playbackRate;
+  }
+
+  function getIntroData(language:String):Dynamic
+  {
+    switch (language)
+    {
+      case 'spanish':
+        return {
+          duration: 5.700,
+          timeline: [
+            {time: 0.020, line: 'cg5-line-1'},
+            {time: 1.550, line: 'qt-line-1'},
+            {time: 3.035, line: 'cg5-line-2'}
+          ]
+        };
+      default:
+        return {
+          duration: 5.450,
+          timeline: [
+            {time: 0.000, line: 'cg5-line-1'},
+            {time: 1.240, line: 'qt-line-1'},
+            {time: 2.900, line: 'cg5-line-2'}
+          ]
+        };
+    }
+  }
+
+  override function onSongLoaded(event)
+  {
+    super.onSongLoaded(event);
+
+    var stage:Stage = PlayState.instance?.currentStage;
+    if (stage?.id != 'recordingStudio') return;
+
+    var gf:BaseCharacter = stage?.getGirlfriend();
+    gf?.visible = false;
+
+    sequence?.destroy();
+    sequence = new SongSequence([
+      {
+        time: 0,
+        callback: () -> stage.enableDarkness()
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(7) / 1000,
+        callback: () -> stage.setLightHueInstant(0, 2.0)
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(15) / 1000,
+        callback: () -> stage.enableBlackScreen()
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(16) / 1000,
+        callback: () -> {
+          stage.disableDarkness();
+          stage.disableBlackScreen();
+          stage.whiteFlash(6.0);
+        }
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(111) / 1000,
+        callback: () -> {
+          stage.enableBlackScreen();
+          stage.enableDarkness();
+        }
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(112) / 1000,
+        callback: () -> {
+          stage.setLightHueInstant(75, 1.5);
+          stage.disableBlackScreen();
+          stage.whiteFlash(6.0);
+        }
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(127) / 1000,
+        callback: () -> stage.setLightHueInstant(-180, 1.5)
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(129) / 1000,
+        callback: () -> stage.setLightHueInstant(-130, 1.5)
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(131) / 1000,
+        callback: () -> stage.setLightHueInstant(-80, 1.5)
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(133) / 1000,
+        callback: () -> stage.setLightHueInstant(-30, 1.5)
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(135) / 1000,
+        callback: () -> stage.setLightHueInstant(20, 1.5)
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(137) / 1000,
+        callback: () -> stage.setLightHueInstant(70, 1.5)
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(139) / 1000,
+        callback: () -> stage.setLightHueInstant(120, 1.5)
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(141) / 1000,
+        callback: () -> stage.setLightHueInstant(170, 1.5)
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(144) / 1000,
+        callback: () -> {
+          stage.setLightHueInstant(75, 1.5);
+          gf?.setIdleState('idleCool');
+        }
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(160) / 1000,
+        callback: () -> {
+          stage.setLightHueInstant(100, 2.0);
+          stage.setLightHueLinear(0, 6.0);
+        }
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(174) / 1000,
+        callback: () -> stage.setLightHueInstant(0, 1.5)
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(175) / 1000,
+        callback: () -> {
+          stage.enableBlackScreen();
+          gf?.setIdleState('default');
+        }
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(176) / 1000,
+        callback: () -> {
+          stage.disableDarkness();
+          stage.disableBlackScreen();
+          stage.whiteFlash(6.0);
+        }
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(192) / 1000,
+        callback: () -> gf?.setIdleState('idleCool')
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(211) / 1000,
+        callback: () -> gf?.setIdleState('dance2')
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(221) / 1000,
+        callback: () -> gf?.setIdleState('danceCool1')
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(239) / 1000,
+        callback: () -> {
+          stage.enableBlackScreen();
+          stage.enableDarkness();
+        }
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(240) / 1000,
+        callback: () -> {
+          gf?.setIdleState('danceCool2');
+          stage.disableBlackScreen();
+          stage.whiteFlash(6.0);
+        }
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(242) / 1000,
+        callback: () -> stage.setLightHueInstant(120, 1.5)
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(246) / 1000,
+        callback: () -> stage.setLightHueInstant(100, 1.5)
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(250) / 1000,
+        callback: () -> stage.setLightHueInstant(80, 1.5)
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(254) / 1000,
+        callback: () -> stage.setLightHueInstant(120, 1.5)
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(258) / 1000,
+        callback: () -> stage.setLightHueInstant(80, 1.5)
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(262) / 1000,
+        callback: () -> {
+          gf?.setIdleState('dance2');
+          stage.setLightHueInstant(70, 1.5);
+        }
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(266) / 1000,
+        callback: () -> {
+          stage.setLightHueInstant(120, 1.5);
+          stage.setLightHueLinear(0, 3.0);
+        }
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(272) / 1000,
+        callback: () -> {
+          stage.setLightHueInstant(0, 1.5);
+          stage.disableDarkness();
+          stage.whiteFlash(6.0);
+        }
+      },
+      {
+        time: Conductor.instance.getBeatTimeInMs(300) / 1000,
+        callback: () -> stage.startOutroBuildup(2.5)
+      }
+    ]);
+    sequence.startTime = 0;
+
+    if (PlayState.instance.isChartingMode) return;
+
+    PlayState.instance.camGame.fade(FlxColor.BLACK, 0, false, null, true);
+  }
+
+  override function onCountdownStart(event)
+  {
+    super.onCountdownStart(event);
+
+    if (PlayState.instance.isChartingMode || !PlayStatePlaylist.isStoryMode) return;
+
+    if (hasPlayedCutscene)
+    {
+      event.cancel();
+      Countdown.stopCountdown();
+      PlayState.instance.isInCountdown = true;
+      Conductor.instance.update(PlayState.instance.startTimestamp);
+      return;
+    }
+
+    hasPlayedCutscene = true;
+    PlayState.instance.isInCutscene = true;
+    PlayState.instance.camHUD.visible = false;
+
+    event.cancel();
+
+    introLines = [for (entry in introTimeline) FunkinSound.load(Paths.sound('gameplay/introGoGoGo/$lang/${entry.line}', 'shared'), 1.0)];
+
+    for (i in 0...introTimeline.length) queueIntroLine(i);
+    FlxTimer.wait(introDuration, () -> endIntro());
+  }
+
+  function queueIntroLine(index:Int)
+  {
+    FlxTimer.wait(introTimeline[index].time, () -> playIntroLine(index));
+  }
+
+  function playIntroLine(index:Int)
+  {
+    var line:FunkinSound = introLines[index];
+    if (line == null) return;
+
+    line.onComplete = () -> {
+      if (Preferences.subtitles && PlayState.instance.subtitles.assignedSound == line)
+      {
+        PlayState.instance.subtitles.assignedSound = null;
+        PlayState.instance.subtitles.setText([], true);
+      }
+    };
+
+    if (Preferences.subtitles) PlayState.instance.subtitles.assignSubtitles('subtitles/$lang/introGoGoGo/${introTimeline[index].line}', line);
+    line.play();
+  }
+
+  function endIntro()
+  {
+    if (Preferences.subtitles)
+    {
+      PlayState.instance.subtitles.assignedSound = null;
+      PlayState.instance.subtitles.setText([], true);
+    }
+
+    PlayState.instance.camHUD.alpha = 0;
+    PlayState.instance.camHUD.visible = true;
+    FlxTween.tween(PlayState.instance.camHUD, {alpha: 1}, 1, {ease: FlxEase.smoothStepInOut});
+
+    PlayState.instance.isInCutscene = false;
+    PlayState.instance.startCountdown();
+  }
+
+  override function onSongStart(event)
+  {
+    super.onSongStart(event);
+
+    if (PlayState.instance.isChartingMode) return;
+
+    PlayState.instance.camGame.fade(FlxColor.BLACK, introFadeDuration, true, null, true);
+  }
+
+  override function onUpdate(event)
+  {
+    super.onUpdate(event);
+    if (!this.hasHiddenStrums)
+    {
+      this.hasHiddenStrums = true;
+      hideOpponentStrumline();
+    }
+  }
+
+  function hideOpponentStrumline()
+  {
+    var opponentStrumline:FlxSprite = PlayState.instance.opponentStrumline;
+    if (opponentStrumline != null)
+    {
+      for (arrow in opponentStrumline.members)
+      {
+        arrow.visible = false;
+      }
+    }
+  }
+
+  override function onSongRetry(event)
+  {
+    super.onSongRetry(event);
+
+    hasDoneOutro = false;
+
+    if (outroTimer != null)
+    {
+      outroTimer.cancel();
+      outroTimer = null;
+    }
+
+    if (logoFallTimer != null)
+    {
+      logoFallTimer.cancel();
+      logoFallTimer = null;
+    }
+
+    if (horsePNG != null)
+    {
+      FlxTween.cancelTweensOf(horsePNG);
+      horsePNG.visible = false;
+    }
+
+    if (collabLogo != null)
+    {
+      FlxTween.cancelTweensOf(collabLogo);
+      collabLogo.visible = false;
+    }
+
+    if (cg5Logo != null)
+    {
+      FlxTween.cancelTweensOf(cg5Logo);
+      cg5Logo.visible = false;
+    }
+
+    if (coverScreen != null)
+    {
+      coverScreen.visible = false;
+    }
+
+    if (outroFlashSpr != null)
+    {
+      FlxTween.cancelTweensOf(outroFlashSpr);
+      outroFlashSpr.visible = false;
+    }
+
+    PlayState.instance.camHUD.visible = true;
+    PlayState.instance.isInCutscene = false;
+    PlayState.instance.mayPauseGame = true;
+    PlayState.instance.togglePauseButton(true);
+
+    var gf = PlayState.instance.currentStage?.getGirlfriend();
+    if (gf != null) gf.visible = false;
+
+    var stage:Dynamic = PlayState.instance.currentStage;
+    if (stage?.id == 'recordingStudio')
+    {
+      stage.disableDarkness();
+      stage.setLightHueInstant(0, 0);
+      stage.disableBlackScreen();
+      stage.stopOutroBuildup();
+    }
+
+    sequence?.running = true;
+    if (PlayState.instance.isChartingMode) return;
+    PlayState.instance.camGame.fade(FlxColor.BLACK, 0.001, false, null, true);
+  }
+
+  override function onGameOver(event)
+  {
+    super.onGameOver(event);
+    PlayState.instance.camGame.fade(FlxColor.BLACK, 0.001, true, null, true);
+
+    sequence?.running = false;
+    clapSfx?.stop();
+    outroSfx?.stop();
+  }
+
+  override function onPause(event)
+  {
+    super.onPause(event);
+
+    FlxG.camera.active = false;
+
+    if (event.eventCanceled || isPauseCreditHooked || PlayState.instance == null) return;
+    if (getPauseCreditee(pauseCreditCategory) == null) return;
+
+    isPauseCreditHooked = true;
+    PlayState.instance.subStateOpened.addOnce(subState -> {
+      isPauseCreditHooked = false;
+      if (Std.isOfType(subState, PauseSubState)) addPauseCredit(subState);
+    });
+  }
+
+  override function onResume(event)
+  {
+    super.onResume(event);
+
+    FlxG.camera.active = true;
+  }
+
+  function getPauseCreditee(category:String):String
+  {
+    switch (category)
+    {
+      case 'Arrangement':
+        return 'CheeseWithCake';
+      default:
+        return null;
+    }
+  }
+
+  function addPauseCredit(pauseState)
+  {
+    var creditee:String = getPauseCreditee(pauseCreditCategory);
+    if (creditee == null) return;
+
+    var metadata = pauseState.metadata;
+    var artist = pauseState.metadataArtist;
+    var artistIndex:Int = metadata.members.indexOf(artist);
+    if (artistIndex < 0 || artistIndex + 1 >= metadata.members.length) return;
+
+    var difficulty = metadata.members[artistIndex + 1];
+    var rowHeight:Float = pauseMetadataRowHeight;
+    var isBottomAnchored:Bool = metadata.members[0].y > pauseState.camera.height * 0.5;
+
+    if (isBottomAnchored)
+    {
+      for (i in 0...artistIndex)
+      {
+        metadata.members[i].y -= rowHeight;
+      }
+    }
+    else
+    {
+      artist.y += rowHeight;
+      difficulty.y += rowHeight;
+      pauseState.metadataDeaths.y += rowHeight;
+      pauseState.metadataPractice.y += rowHeight;
+    }
+
+    var creditText:FlxText = new FlxText(artist.x, artist.y - rowHeight, artist.fieldWidth, pauseCreditCategory + ': ' + creditee);
+    creditText.setFormat(Paths.font('vcr.ttf'), artist.size, FlxColor.WHITE, artist.alignment);
+    creditText.scrollFactor.set(0, 0);
+    creditText.alpha = 0;
+    metadata.insert(artistIndex, creditText);
+
+    if (!isBottomAnchored)
+    {
+      var firstIndex:Int = artistIndex;
+      var lastIndex:Int = metadata.members.length;
+      for (i in firstIndex...lastIndex)
+      {
+        var child = metadata.members[i];
+        FlxTween.cancelTweensOf(child, ['y']);
+        FlxTween.tween(child, {alpha: 1, y: child.y + 5}, 1.8, {ease: FlxEase.quartOut, startDelay: 0.1 * (i + 1)});
+      }
+    }
+  }
+
+  override function onBeatHit(event)
+  {
+    super.onBeatHit(event);
+
+    var gf = PlayState.instance.currentStage?.getGirlfriend();
+    if (gf != null)
+    {
+      var shouldBeVisible:Bool = (event.beat >= 111);
+      if (gf.visible != shouldBeVisible)
+      {
+        gf.visible = shouldBeVisible;
+      }
+    }
+    switch (event.beat)
+    {
+      case 110:
+        playSfxOnBeat(clapSfx, event.beat);
+      case 286:
+        playSfxOnBeat(outroSfx, event.beat);
+    }
+  }
+
+  function playSfxOnBeat(sfx:FunkinSound, beat:Int)
+  {
+    sfx?.play(false, Conductor.instance.songPosition - Conductor.instance.getBeatTimeInMs(beat));
+  }
+
+  override function onNoteGhostMiss(event)
+  {
+    super.onNoteGhostMiss(event);
+
+    if (Conductor.instance.currentBeat <= introGhostTapEndBeat)
+    {
+      event.cancel();
+      event.stopPropagation();
+    }
+  }
+
+  override function onSongEnd(event)
+  {
+    super.onSongEnd(event);
+
+    if (!hasDoneOutro)
+    {
+      event.cancel();
+      event.stopPropagation();
+      hasDoneOutro = true;
+      doOutro();
+    }
+  }
+
+  public function doOutro()
+  {
+    var horseChance:Bool = FlxG.random.bool(0.5);
+
+    var stage:Dynamic = PlayState.instance.currentStage;
+    if (stage != null && stage.id == 'recordingStudio')
+    {
+      stage.stopOutroBuildup();
+    }
+
+    PlayState.instance.camHUD.visible = false;
+    PlayState.instance.isInCutscene = true;
+    PlayState.instance.mayPauseGame = false;
+    PlayState.instance.togglePauseButton();
+
+    var cutsceneCam = PlayState.instance.camCutscene;
+
+    if (cutsceneCam.width != FlxG.width || cutsceneCam.height != FlxG.height)
+    {
+      trace('[go-go-go] camCutscene (' + cutsceneCam.width + 'x' + cutsceneCam.height + ') no coincide con FlxG (' + FlxG.width + 'x' + FlxG.height
+        + '), se resincroniza.');
+      cutsceneCam.setSize(FlxG.width, FlxG.height);
+    }
+
+    var offsetX:Float = (FlxG.width - 1280) / 2;
+    var offsetY:Float = (FlxG.height - 720) / 2;
+    var centerX:Float = FlxG.width / 2;
+    var centerY:Float = FlxG.height / 2;
+
+    coverScreen = new FunkinSprite().makeSolidColor(Std.int(cutsceneCam.width * 1.5), Std.int(cutsceneCam.height * 1.5), FlxColor.BLACK);
+    coverScreen.cameras = [PlayState.instance.camCutscene];
+    coverScreen.zIndex = 99999;
+    coverScreen.setPosition(centerX - coverScreen.width / 2, centerY - coverScreen.height / 2);
+
+    PlayState.instance.add(coverScreen);
+
+    // if you rename this variable you go to hell <--- "horsePNG is love, horsePNG os life" <--- really got that eric soul <--- Hi friend
+    horsePNG = new FunkinSprite().loadTexture(horseChance ? 'recordingStudio/endSequence/placeholder' : 'recordingStudio/endSequence/rewiredLogo');
+    horsePNG.cameras = [PlayState.instance.camCutscene];
+    horsePNG.zIndex = coverScreen.zIndex + 1;
+    horsePNG.scale.set(rewiredLogoStartScale, rewiredLogoStartScale);
+    horsePNG.updateHitbox();
+    horsePNG.setPosition(centerX - horsePNG.width / 2, centerY - horsePNG.height / 2);
+    PlayState.instance.add(horsePNG);
+
+    collabLogo = new FunkinSprite().loadTexture('recordingStudio/endSequence/collab');
+    collabLogo.cameras = [PlayState.instance.camCutscene];
+    collabLogo.zIndex = horsePNG.zIndex + 1;
+    collabLogo.scale.set(rewiredLogoEndScale, rewiredLogoEndScale);
+    collabLogo.updateHitbox();
+    collabLogo.setPosition(collabLogoX + offsetX, collabLogoY + offsetY);
+    collabLogo.alpha = 0;
+    PlayState.instance.add(collabLogo);
+
+    cg5Logo = new FunkinSprite().loadTexture('recordingStudio/endSequence/CG5Logo');
+    cg5Logo.cameras = [PlayState.instance.camCutscene];
+    cg5Logo.zIndex = collabLogo.zIndex + 1;
+    cg5Logo.scale.set(rewiredLogoEndScale, rewiredLogoEndScale);
+    cg5Logo.updateHitbox();
+    cg5Logo.setPosition(cg5LogoStartX + offsetX, cg5LogoY + offsetY);
+    cg5Logo.alpha = 0;
+    PlayState.instance.add(cg5Logo);
+
+    outroFlashSpr = new FunkinSprite().makeSolidColor(Std.int(cutsceneCam.width * 1.5), Std.int(cutsceneCam.height * 1.5), FlxColor.WHITE);
+    outroFlashSpr.cameras = [PlayState.instance.camCutscene];
+    outroFlashSpr.zIndex = horsePNG.zIndex + 1;
+    outroFlashSpr.alpha = 0.115;
+    outroFlashSpr.setPosition(centerX - outroFlashSpr.width / 2, centerY - outroFlashSpr.height / 2);
+    PlayState.instance.add(outroFlashSpr);
+
+    FlxTween.tween(outroFlashSpr, {alpha: 0}, 2.0,
+      {
+        onComplete: _ -> {
+          if (outroFlashSpr != null)
+          {
+            PlayState.instance.remove(outroFlashSpr);
+            outroFlashSpr.destroy();
+            outroFlashSpr = null;
+          }
+        }
+      });
+
+    FlxTween.tween(horsePNG.scale, {x: rewiredLogoEndScale, y: rewiredLogoEndScale}, rewiredLogoShrinkDuration,
+      {
+        ease: FlxEase.expoOut,
+        onComplete: _ -> {
+          if (horseChance) return;
+
+          FlxTween.tween(horsePNG, {x: rewiredLogoTargetX + offsetX}, rewiredLogoMoveDuration, {ease: FlxEase.quartInOut});
+          FlxTween.tween(collabLogo, {alpha: 1}, collabLogoFadeInDuration, {startDelay: collabDelay});
+          FlxTween.tween(cg5Logo, {alpha: 1}, cg5LogoFadeInDuration, {ease: FlxEase.expoOut, startDelay: cg5LogoAppearDelay});
+          FlxTween.tween(cg5Logo, {x: cg5LogoEndX + offsetX}, cg5LogoMoveDuration, {ease: FlxEase.expoOut, startDelay: cg5LogoAppearDelay});
+
+          var settleDuration:Float = 2.6;
+
+          logoFallTimer = FlxTimer.wait(settleDuration + outroHoldDuration, () -> {
+            if (horsePNG != null)
+            {
+              FlxTween.cancelTweensOf(horsePNG);
+              FlxTween.tween(horsePNG, {alpha: 0}, outroFallFadeDuration, {ease: FlxEase.sineOut});
+            }
+            if (collabLogo != null)
+            {
+              FlxTween.cancelTweensOf(collabLogo);
+              FlxTween.tween(collabLogo, {alpha: 0}, outroFallFadeDuration, {ease: FlxEase.sineOut});
+            }
+            if (cg5Logo != null)
+            {
+              FlxTween.cancelTweensOf(cg5Logo);
+              FlxTween.tween(cg5Logo, {alpha: 0}, outroFallFadeDuration, {ease: FlxEase.sineOut});
+            }
+          });
+        }
+      });
+
+    outroTimer = FlxTimer.wait(outroTotalDuration, () -> PlayState.instance?.endSong());
+  }
+
+  override function onDestroy(event)
+  {
+    super.onDestroy(event);
+    this.hasHiddenStrums = false;
+    this.hasDoneOutro = false;
+    this.isPauseCreditHooked = false;
+
+    if (outroTimer != null)
+    {
+      outroTimer.cancel();
+      outroTimer = null;
+    }
+
+    if (logoFallTimer != null)
+    {
+      logoFallTimer.cancel();
+      logoFallTimer = null;
+    }
+
+    for (line in introLines)
+    {
+      line?.stop();
+      line?.destroy();
+    }
+
+    sequence?.destroy();
+    clapSfx?.destroy();
+    outroSfx?.destroy();
+  }
+}

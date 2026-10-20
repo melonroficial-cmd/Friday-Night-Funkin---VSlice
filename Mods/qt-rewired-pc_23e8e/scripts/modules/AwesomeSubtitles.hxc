@@ -1,0 +1,508 @@
+package rewired.modules;
+
+import funkin.modding.module.Module;
+import funkin.play.PlayState;
+import funkin.Conductor;
+import funkin.Assets;
+import funkin.Paths;
+import funkin.Preferences;
+import funkin.util.Constants;
+import flixel.FlxG;
+import flixel.text.FlxText;
+import flixel.text.FlxTextBorderStyle;
+import flixel.text.FlxTextFormat;
+import funkin.util.FlxTweenUtil;
+import flixel.tweens.FlxTween;
+import flixel.tweens.FlxEase;
+import flixel.util.FlxColor;
+import StringTools;
+
+class AwesomeSubtitles extends Module
+{
+  static final LYRICS_FILE_KEY:String = 'song-lyrics-awesome';
+
+  static final MARGIN_LEFT:Float = 12;
+  static final MARGIN_BOTTOM:Float = 221;
+
+  static final TOP_TEXT_SCALE:Float = 0.914;
+  static final BOTTOM_TEXT_SCALE:Float = 0.777;
+  static final LINE_DISTANCE:Float = 24;
+
+  static final MOBILE_SCALE:Float = 1.22;
+
+  static final FONT_SIZE:Int = 28;
+  static final FONT_NAME:String = 'vcr.ttf';
+  static final OUTLINE_COLOR:Int = 0xFF000000;
+  static final OUTLINE_SIZE:Float = 1.75;
+
+  static final FORMAT_TAGS:Array<String> = ['b', 'strong', 'i', 'em', 'u', 's', 'font'];
+
+  static final NEXT_ALPHA:Float = 0.3;
+  static final NEXT_LINE_LEAD_MS:Float = 5000.67;
+  static final PHRASE_GAP_MS:Float = 3000;
+  static final PHRASE_START_LEAD_MS:Float = 1500;
+
+  static final PROMOTE_TIME:Float = 0.2;
+  static final FADE_IN_TIME:Float = 0.2;
+  static final FADE_OUT_TIME:Float = 0.25;
+  static final ENTER_SLIDE_Y:Float = 10;
+
+  var pool:Array<FlxText> = [];
+  var topText:FlxText;
+  var bottomText:FlxText;
+  var owner:PlayState;
+  var entries:Array<Dynamic> = [];
+  var cursor:Int = 0;
+  var shownCur:Int = -1;
+  var shownNext:Int = -1;
+
+  public function new()
+  {
+    super('AwesomeSubtitles', 1000);
+  }
+
+  public override function onSongLoaded(event:SongLoadScriptEvent):Void
+  {
+    setupForCurrentSong();
+  }
+
+  public override function onCountdownStart(event:CountdownScriptEvent):Void
+  {
+    setupForCurrentSong();
+  }
+
+  public override function onSongRetry(event:SongRetryEvent):Void
+  {
+    resetDisplay();
+  }
+
+  public override function onGameOver(event:ScriptEvent):Void
+  {
+    releaseState();
+  }
+
+  public override function onDestroy(event:ScriptEvent):Void
+  {
+    releaseState();
+  }
+
+  public override function onPause(event:PauseScriptEvent):Void
+  {
+    super.onPause(event);
+
+    for (text in pool)
+    {
+      FlxTweenUtil.pauseTweensOf(text);
+      FlxTweenUtil.pauseTweensOf(text.scale);
+    }
+  }
+
+  public override function onResume(event:ScriptEvent):Void
+  {
+    super.onResume(event);
+
+    for (text in pool)
+    {
+      FlxTweenUtil.resumeTweensOf(text);
+      FlxTweenUtil.resumeTweensOf(text.scale);
+    }
+  }
+
+  public override function onUpdate(event:UpdateScriptEvent):Void
+  {
+    if (pool.length == 0) return;
+
+    if (PlayState.instance != owner)
+    {
+      releaseState();
+      return;
+    }
+
+    var songPosition:Float = Conductor.instance.songPosition;
+    while (cursor < entries.length && entries[cursor].start <= songPosition)
+      cursor++;
+    while (cursor > 0 && entries[cursor - 1].start > songPosition)
+      cursor--;
+
+    var currentIdx:Int = (cursor > 0 && songPosition < entries[cursor - 1].end) ? cursor - 1 : -1;
+    var nextIdx:Int = (cursor < entries.length && canPreview(cursor, songPosition)) ? cursor : -1;
+    syncLines(currentIdx, nextIdx);
+
+    for (text in pool)
+      text.offset.set(text.origin.x * (1 - text.scale.x), text.origin.y * (1 - text.scale.y));
+  }
+
+  function setupForCurrentSong():Void
+  {
+    var state:PlayState = PlayState.instance;
+    if (state == null) return;
+
+    var variation:String = state.currentVariation;
+    var suffix:String = (variation == null || variation == Constants.DEFAULT_VARIATION) ? '' : '-' + variation;
+
+    if (!Preferences.subtitles)
+    {
+      releaseState();
+      return;
+    }
+
+    if (owner != state)
+    {
+      releaseState();
+      entries = loadEntries(state.currentSong.id, suffix);
+      if (entries.length == 0) return;
+
+      owner = state;
+      buildTextPool(state);
+    }
+
+    resetDisplay();
+  }
+
+  function buildTextPool(state:PlayState):Void
+  {
+    for (i in 0...6)
+    {
+      var text:FlxText = new FlxText(0, 0, 0,
+        '').setFormat(Paths.font(FONT_NAME), FONT_SIZE, FlxColor.WHITE, 'left', FlxTextBorderStyle.OUTLINE, OUTLINE_COLOR);
+      text.borderSize = OUTLINE_SIZE;
+      text.antialiasing = true;
+      text.scrollFactor.set();
+      text.moves = false;
+      text.visible = false;
+      text.cameras = [state.camSubtitles];
+      state.add(text);
+      pool.push(text);
+    }
+  }
+
+  function releaseState():Void
+  {
+    for (text in pool)
+    {
+      if (!text.exists) continue;
+      cancelTweens(text);
+      owner.remove(text, true);
+      text.destroy();
+    }
+
+    pool = [];
+    owner = null;
+    entries = [];
+  }
+
+  function resetDisplay():Void
+  {
+    for (text in pool)
+    {
+      cancelTweens(text);
+      text.visible = false;
+    }
+
+    topText = null;
+    bottomText = null;
+    cursor = 0;
+    shownCur = -1;
+    shownNext = -1;
+  }
+
+  function syncLines(currentIdx:Int, nextIdx:Int):Void
+  {
+    if (currentIdx != shownCur)
+    {
+      var outgoing:FlxText = topText;
+
+      if (currentIdx != -1 && currentIdx == shownNext)
+      {
+        topText = bottomText;
+        bottomText = null;
+        shownNext = -1;
+        promoteToTop(topText);
+      }
+      else
+      {
+        topText = (currentIdx == -1) ? null : acquireText();
+        if (topText != null) showLine(topText, entries[currentIdx], true, 1);
+      }
+
+      fadeOut(outgoing);
+      shownCur = currentIdx;
+    }
+
+    if (nextIdx != shownNext)
+    {
+      fadeOut(bottomText);
+      bottomText = (nextIdx == -1) ? null : acquireText();
+      if (bottomText != null) showLine(bottomText, entries[nextIdx], false, NEXT_ALPHA);
+      shownNext = nextIdx;
+    }
+  }
+
+  function showLine(text:FlxText, entry:Dynamic, isTop:Bool, targetAlpha:Float):Void
+  {
+    text.italic = false;
+    text.bold = false;
+    text.color = FlxColor.WHITE;
+
+    text.font = (entry.font != null) ? entry.font : Paths.font(FONT_NAME);
+
+    text.clearFormats();
+    text.text = entry.text;
+    for (run in entry.runs)
+      text.addFormat(new FlxTextFormat(run.color, run.bold, run.italic, OUTLINE_COLOR), run.start, run.end);
+
+    var lineScale:Float = (isTop ? TOP_TEXT_SCALE : BOTTOM_TEXT_SCALE) * mobileScale();
+    var targetY:Float = slotY(isTop);
+    text.scale.set(lineScale, lineScale);
+    text.setPosition(MARGIN_LEFT, targetY + ENTER_SLIDE_Y);
+    text.alpha = 0;
+    text.visible = true;
+
+    FlxTween.tween(text, {alpha: targetAlpha, y: targetY}, FADE_IN_TIME, {ease: FlxEase.quadOut});
+  }
+
+  function promoteToTop(text:FlxText):Void
+  {
+    cancelTweens(text);
+
+    var topScale:Float = TOP_TEXT_SCALE * mobileScale();
+    FlxTween.tween(text, {y: slotY(true), alpha: 1}, PROMOTE_TIME, {ease: FlxEase.quadOut});
+    FlxTween.tween(text.scale, {x: topScale, y: topScale}, PROMOTE_TIME, {ease: FlxEase.quadOut});
+  }
+
+  function fadeOut(text:FlxText):Void
+  {
+    if (text == null) return;
+
+    cancelTweens(text);
+
+    FlxTween.tween(text, {alpha: 0}, FADE_OUT_TIME,
+      {
+        ease: FlxEase.quadOut,
+        onComplete: function(_):Void {
+          text.visible = false;
+        }
+      });
+  }
+
+  function acquireText():FlxText
+  {
+    var fallback:FlxText = null;
+
+    for (text in pool)
+    {
+      if (text == topText || text == bottomText) continue;
+      if (!text.visible) return text;
+      fallback = text;
+    }
+
+    cancelTweens(fallback);
+    return fallback;
+  }
+
+  function cancelTweens(text:FlxText):Void
+  {
+    FlxTween.cancelTweensOf(text);
+    FlxTween.cancelTweensOf(text.scale);
+  }
+
+  function slotY(isTop:Bool):Float
+  {
+    var offsetY:Float = isTop ? 0 : LINE_DISTANCE;
+    return FlxG.height - MARGIN_BOTTOM + mobileOffsetY() + offsetY * mobileScale();
+  }
+
+  function mobileScale():Float
+  {
+    return FlxG.onMobile ? MOBILE_SCALE : 1;
+  }
+
+  function mobileOffsetY():Float
+  {
+    return FlxG.onMobile ? -360 : 0;
+  }
+
+  function canPreview(idx:Int, time:Float):Bool
+  {
+    var startsPhrase:Bool = idx == 0 || entries[idx].start - entries[idx - 1].end > PHRASE_GAP_MS;
+    return entries[idx].start - time <= (startsPhrase ? PHRASE_START_LEAD_MS : NEXT_LINE_LEAD_MS);
+  }
+
+  function loadEntries(songId:String, suffix:String):Array<Dynamic>
+  {
+    var path:String = Paths.srt(LYRICS_FILE_KEY + suffix, null, 'data/songs/' + songId + '/subtitles/');
+    if (!Assets.exists(path)) return [];
+
+    return parseSRT(Assets.getText(path));
+  }
+
+  function parseSRT(raw:String):Array<Dynamic>
+  {
+    var normalized:String = StringTools.replace(StringTools.replace(raw, '\r\n', '\n'), '\r', '\n');
+    if (normalized.charCodeAt(0) == 0xFEFF) normalized = normalized.substr(1);
+
+    var parsed:Array<Dynamic> = [];
+
+    for (cue in normalized.split('\n\n'))
+    {
+      var lines:Array<String> = StringTools.trim(cue).split('\n');
+      if (lines.length < 2) continue;
+
+      var timeIdx:Int = (lines[0].indexOf('-->') != -1) ? 0 : 1;
+      var range:Array<String> = lines[timeIdx].split('-->');
+      if (range.length != 2) continue;
+
+      var start:Float = parseTimecode(range[0]);
+      var end:Float = parseTimecode(range[1]);
+      if (start < 0 || end < 0) continue;
+
+      var content:String = '';
+      for (i in (timeIdx + 1)...lines.length)
+      {
+        var part:String = StringTools.trim(lines[i]);
+        if (part.length > 0) content += (content.length > 0 ? ' ' : '') + part;
+      }
+
+      var rich:Dynamic = parseRichText(content);
+      if (rich.text.length == 0) continue;
+
+      parsed.push(
+        {
+          start: start,
+          end: end,
+          text: rich.text,
+          runs: rich.runs,
+          font: rich.font
+        });
+    }
+
+    parsed.sort((c, d) -> Std.int(c.start - d.start));
+    return parsed;
+  }
+
+  function parseRichText(source:String):Dynamic
+  {
+    var plain:String = '';
+    var runs:Array<Dynamic> = [];
+    var stack:Array<Dynamic> = [];
+    var style:Dynamic = {color: null, bold: false, italic: false};
+    var face:String = null;
+    var runStart:Int = 0;
+    var i:Int = 0;
+
+    while (i < source.length)
+    {
+      var ch:String = source.charAt(i);
+
+      var tagEnd:Int = (ch == '<' && source.charAt(i + 1) != ' ') ? source.indexOf('>', i) : -1;
+      if (tagEnd != -1)
+      {
+        var tagBody:String = StringTools.trim(source.substring(i + 1, tagEnd));
+        var isClosing:Bool = tagBody.charAt(0) == '/';
+        var tagName:String = (isClosing ? StringTools.trim(tagBody.substr(1)) : tagBody).split(' ')[0].toLowerCase();
+
+        if (FORMAT_TAGS.indexOf(tagName) != -1)
+        {
+          pushRun(runs, style, runStart, plain.length);
+          runStart = plain.length;
+
+          if (!isClosing)
+          {
+            stack.push(style);
+            style =
+              {
+                color: style.color,
+                bold: style.bold || tagName == 'b' || tagName == 'strong',
+                italic: style.italic || tagName == 'i' || tagName == 'em'};
+
+            if (tagName == 'font')
+            {
+              var color:Dynamic = parseColor(getTagAttribute(tagBody, 'color'));
+              if (color != null) style.color = color;
+              if (face == null) face = resolveFont(getTagAttribute(tagBody, 'face'));
+            }
+          }
+          else if (stack.length > 0)
+          {
+            style = stack.pop();
+          }
+
+          i = tagEnd + 1;
+          continue;
+        }
+      }
+
+      plain += ch;
+      i++;
+    }
+
+    pushRun(runs, style, runStart, plain.length);
+
+    return {text: plain, runs: runs, font: face};
+  }
+
+  function pushRun(runs:Array<Dynamic>, style:Dynamic, start:Int, end:Int):Void
+  {
+    if (end > start && (style.color != null || style.bold || style.italic))
+    {
+      runs.push(
+        {
+          start: start,
+          end: end,
+          color: style.color,
+          bold: style.bold,
+          italic: style.italic
+        });
+    }
+  }
+
+  function getTagAttribute(tagBody:String, name:String):String
+  {
+    var idx:Int = tagBody.toLowerCase().indexOf(' ' + name + '=');
+    if (idx == -1) return null;
+
+    var start:Int = idx + name.length + 2;
+    var quote:String = tagBody.charAt(start);
+    var isQuoted:Bool = quote == '"' || quote == "'";
+    if (isQuoted) start++;
+
+    var end:Int = tagBody.indexOf(isQuoted ? quote : ' ', start);
+    return (end == -1) ? tagBody.substr(start) : tagBody.substring(start, end);
+  }
+
+  function parseColor(raw:String):Dynamic
+  {
+    if (raw == null) return null;
+
+    var value:String = StringTools.trim(raw);
+    if (value.length == 4 && value.charAt(0) == '#')
+    {
+      value = '#' + value.charAt(1) + value.charAt(1) + value.charAt(2) + value.charAt(2) + value.charAt(3) + value.charAt(3);
+    }
+
+    return FlxColor.fromString(value);
+  }
+
+  function resolveFont(face:String):String
+  {
+    var fileName:String = (face == null) ? '' : StringTools.trim(face);
+    if (fileName.length == 0) return null;
+    if (fileName.indexOf('.') == -1) fileName += '.ttf';
+
+    var path:String = Paths.font(fileName);
+    return Assets.exists(path) ? path : null;
+  }
+
+  function parseTimecode(raw:String):Float
+  {
+    var parts:Array<String> = StringTools.replace(StringTools.trim(raw), ',', '.').split(':');
+    if (parts.length != 3) return -1;
+
+    var hours:Null<Int> = Std.parseInt(parts[0]);
+    var minutes:Null<Int> = Std.parseInt(parts[1]);
+    var seconds:Float = Std.parseFloat(parts[2]);
+    if (hours == null || minutes == null || Math.isNaN(seconds)) return -1;
+
+    return Math.round((hours * 3600 + minutes * 60 + seconds) * 1000);
+  }
+}

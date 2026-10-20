@@ -1,0 +1,484 @@
+package rewired.characters;
+
+import flixel.FlxG;
+import flixel.FlxCamera;
+import flixel.util.FlxColor;
+import flixel.util.FlxTimer;
+import flixel.math.FlxPoint;
+import flixel.tweens.FlxTween;
+import flixel.tweens.FlxEase;
+import funkin.play.character.MultiAnimateAtlasCharacter;
+import funkin.play.GameOverSubState;
+import funkin.play.PlayState;
+import funkin.play.PauseSubState;
+import funkin.play.character.CharacterType;
+import funkin.util.TouchUtil;
+import funkin.audio.FunkinSound;
+import funkin.graphics.FunkinSprite;
+import funkin.Paths;
+import funkin.Preferences;
+import funkin.save.Save;
+
+class QtCollabPlayableCharacter extends MultiAnimateAtlasCharacter
+{
+  public var camTween:FlxTween;
+  public var zoomTween:FlxTween;
+  public final customCamScroll:FlxPoint;
+
+  public var customCamZoom:Float = 1.0;
+  public var lockCamera:Bool = false;
+
+  public var stateTimer:Float = 0.0;
+  public var hasActioned:Bool = false;
+  public var bopTween:FlxTween;
+
+  public var isLooping:Bool = false;
+  public var bopAccumulator:Float = 0.0;
+  public var bopZoomOffset:Float = 0.0;
+
+  public var confirmLineCount:Int = 1;
+  public var confirmLine:Int = 0;
+  public var cg5DeathLineCount:Int = 6;
+  public var cg5DeathLine:Int = 0;
+  public var cg5DeathQuoteDelay:Float = 0.9;
+  public var quoteTimer:FlxTimer;
+  public var musicTween:FlxTween;
+
+  public var retrySprite:FunkinSprite;
+  public var smokeSprite:FunkinSprite;
+  public var flashSprite:FunkinSprite;
+  public var lastIntroFrame:Int = -1;
+
+  public final introPos:FlxPoint;
+  public final introOffset:FlxPoint;
+  public final introOrigin:FlxPoint;
+  public final introScale:FlxPoint;
+  public var stageShader:Dynamic;
+  public var stageColor:FlxColor;
+
+  public function new()
+  {
+    super('collab/cg5/qt-playable-collab');
+    customCamScroll = new FlxPoint();
+    introPos = new FlxPoint();
+    introOffset = new FlxPoint();
+    introOrigin = new FlxPoint();
+    introScale = new FlxPoint(1, 1);
+  }
+
+  public override function onCreate(event)
+  {
+    super.onCreate(event);
+
+    GameOverSubState.musicSuffix = '-qt';
+    GameOverSubState.blueBallSuffix = '-qt';
+    PauseSubState.musicSuffix = '-qt';
+  }
+
+  public override function playAnimation(name:String, restart:Bool = false, ignoreOther:Bool = false, reversed:Bool = false)
+  {
+    super.playAnimation(name, restart, ignoreOther, reversed);
+
+    if (name == "firstDeath")
+    {
+      stateTimer = 0.0;
+      hasActioned = false;
+      lockCamera = false;
+      cg5DeathLine = 0;
+      bopZoomOffset = 0.0;
+
+      isLooping = false;
+      bopAccumulator = 0.0;
+      lastIntroFrame = -1;
+
+      if (GameOverSubState.instance != null)
+      {
+        GameOverSubState.instance.startDeathMusic(1.0, false);
+        GameOverSubState.instance.gameOverMusic?.pause();
+        FlxG.camera.target = null;
+
+        customCamScroll.set(FlxG.camera.scroll.x, FlxG.camera.scroll.y);
+        customCamZoom = FlxG.camera.zoom;
+        lockCamera = true;
+
+        // firstDeath offsets
+        final camPos = this.getMidpoint();
+
+        final offsetX:Float = 20;
+        final offsetY:Float = -60;
+
+        final targetX = camPos.x + offsetX - (FlxG.width / 2);
+        final targetY = camPos.y + offsetY - (FlxG.height / 2);
+
+        camPos.put();
+
+        camTween = FlxTween.tween(customCamScroll, {x: targetX, y: targetY}, 2.5, {ease: FlxEase.expoOut});
+
+        zoomTween = FlxTween.num(customCamZoom, 0.85, 2.5, {ease: FlxEase.expoOut}, function(v:Float) {
+          customCamZoom = v;
+        });
+
+        if (this.getDeathQuote() != null) GameOverSubState.instance.hasPlayedDeathQuote = true;
+        stageShader = this.shader;
+        this.shader = null;
+        stageColor = this.color;
+        this.color = FlxColor.WHITE;
+
+        prepareOverlays();
+      }
+    }
+  }
+
+  public function startDeathLoop():Void
+  {
+    if (camTween != null) camTween.cancel();
+    if (zoomTween != null) zoomTween.cancel();
+
+    // Loop offsets
+    final camPosLoop = this.getMidpoint();
+    final loopOffsetY:Float = 10;
+
+    final dropY = camPosLoop.y + loopOffsetY - (FlxG.height / 2);
+    camPosLoop.put();
+
+    camTween = FlxTween.tween(customCamScroll, {y: dropY}, 2.0, {ease: FlxEase.expoOut});
+
+    zoomTween = FlxTween.num(customCamZoom, 0.95, 2.0, {ease: FlxEase.expoOut}, function(v:Float) {
+      customCamZoom = v;
+    });
+
+    GameOverSubState.instance.gameOverMusic?.resume();
+
+    final deathQuote:Null<String> = this.getDeathQuote();
+    if (deathQuote != null)
+    {
+      quoteTimer = new FlxTimer().start(cg5DeathQuoteDelay, function(quoteTmr:FlxTimer) {
+        this.playDeathQuote(deathQuote);
+      });
+    }
+
+    isLooping = true;
+    bopAccumulator = 0.0;
+
+    bopZoomOffset = 0.015;
+    if (bopTween != null) bopTween.cancel();
+    bopTween = FlxTween.num(bopZoomOffset, 0.0, 0.35, {ease: FlxEase.quadOut}, function(v:Float) {
+      bopZoomOffset = v;
+    });
+  }
+
+  public override function onUpdate(event)
+  {
+    super.onUpdate(event);
+
+    if (GameOverSubState.instance == null) return;
+
+    stateTimer += FlxG.elapsed;
+
+    if (!GameOverSubState.instance.isEnding)
+    {
+      GameOverSubState.instance.mustNotExit = true;
+
+      if (stateTimer < 2.42)
+      {
+        GameOverSubState.instance.canInput = false;
+      }
+      else
+      {
+        GameOverSubState.instance.canInput = true;
+      }
+    }
+
+    if (lockCamera)
+    {
+      FlxG.camera.target = null;
+      FlxG.camera.scroll.x = customCamScroll.x;
+      FlxG.camera.scroll.y = customCamScroll.y;
+      FlxG.camera.zoom = customCamZoom + bopZoomOffset;
+    }
+
+    if (isLooping && !GameOverSubState.instance.isEnding)
+    {
+      bopAccumulator += FlxG.elapsed;
+      final bopInterval:Float = (60.0 / 115.0) * 2.0;
+
+      if (bopAccumulator >= bopInterval)
+      {
+        bopAccumulator -= bopInterval;
+
+        bopZoomOffset = 0.015;
+        if (bopTween != null) bopTween.cancel();
+        bopTween = FlxTween.num(bopZoomOffset, 0.0, 0.35, {ease: FlxEase.quadOut}, function(v:Float) {
+          bopZoomOffset = v;
+        });
+      }
+    }
+
+    updateOverlays();
+
+    if (!GameOverSubState.instance.isEnding && this.getCurrentAnimation() == 'firstDeath' && this.isAnimationFinished())
+    {
+      this.playAnimation('deathLoop', true, true);
+    }
+
+    if (GameOverSubState.instance.isEnding
+      && GameOverSubState.instance.deathQuoteSound == null
+      && this.getCurrentAnimation().indexOf('deathConfirm') == 0
+      && this.animation.curAnim.curFrame >= 5)
+    {
+      final language:String = Save.instance.modOptions.get(QtOptionsCategory.SAVE_KEY_LANG_QT);
+
+      GameOverSubState.instance.deathQuoteSound = FunkinSound.playOnce(Paths.sound('qtgameover/$language/qt/qtConfirm-$confirmLine'), 1.0);
+      GameOverSubtitles.assignToQuote('subtitles/$language/gameover/qt/confirm-line-$confirmLine');
+    }
+
+    final canTrigger = stateTimer >= 2.2 && !hasActioned && !GameOverSubState.instance.isEnding;
+
+    if (GameOverSubState.instance.controls.BACK && canTrigger)
+    {
+      hasActioned = true;
+      isLooping = false;
+      if (quoteTimer != null) quoteTimer.cancel();
+      if (musicTween != null) musicTween.cancel();
+      if (bopTween != null) bopTween.cancel();
+      if (camTween != null) camTween.cancel();
+      if (zoomTween != null) zoomTween.cancel();
+
+      lockCamera = false;
+      GameOverSubState.instance.mustNotExit = false;
+      GameOverSubState.blueballed = true;
+      detachOverlays();
+      GameOverSubState.instance.goBack();
+      return;
+    }
+
+    final inputCondition = (GameOverSubState.instance.controls.ACCEPT
+      || (FlxG.onMobile && TouchUtil.pressAction() && !TouchUtil.overlaps(GameOverSubState.instance.backButton)))
+      && canTrigger;
+
+    if (inputCondition)
+    {
+      hasActioned = true;
+      isLooping = false;
+      if (quoteTimer != null) quoteTimer.cancel();
+      if (musicTween != null) musicTween.cancel();
+      if (bopTween != null) bopTween.cancel();
+      if (camTween != null) camTween.cancel();
+      if (zoomTween != null) zoomTween.cancel();
+
+      // Confirm offsets
+      final camPosConfirm = this.getMidpoint();
+      final confirmOffsetY:Float = -25;
+
+      final confirmY = camPosConfirm.y + confirmOffsetY - (FlxG.height / 2);
+      camPosConfirm.put();
+
+      camTween = FlxTween.tween(customCamScroll, {y: confirmY}, 2.5, {ease: FlxEase.expoOut});
+      zoomTween = FlxTween.num(customCamZoom, 0.9, 2.5, {ease: FlxEase.expoOut}, function(v:Float) {
+        customCamZoom = v;
+      });
+
+      GameOverSubState.blueballed = false;
+      GameOverSubState.instance.isEnding = true;
+      GameOverSubState.instance.mustNotExit = false;
+
+      GameOverSubState.instance.hasPlayedDeathQuote = true;
+      if (GameOverSubState.instance.deathQuoteSound != null)
+      {
+        GameOverSubState.instance.deathQuoteSound.stop();
+        GameOverSubState.instance.deathQuoteSound = null;
+        // DIE
+        GameOverSubtitles.instance.subtitles?.kill();
+      }
+
+      if (FlxG.sound.music != null) FlxG.sound.music.stop();
+      GameOverSubState.instance.startDeathMusic(1.0, true);
+
+      confirmLine = FlxG.random.int(1, confirmLineCount);
+      final language:String = Save.instance.modOptions.get(QtOptionsCategory.SAVE_KEY_LANG_QT);
+
+      playConfirm(language, confirmLine);
+
+      new FlxTimer().start(2.5, function(tmr:FlxTimer) {
+        FlxG.camera.fade(FlxColor.BLACK, 2, false, function() {
+          FlxG.camera.fade(FlxColor.BLACK, 1, true, null, true);
+
+          if (GameOverSubState.instance.parentPlayState != null)
+          {
+            GameOverSubState.instance.parentPlayState.needsReset = true;
+
+            if (!(GameOverSubState.instance.parentPlayState.isMinimalMode ?? true))
+            {
+              GameOverSubState.instance.boyfriend.isDead = false;
+              this.shader = stageShader;
+              this.color = stageColor;
+              GameOverSubState.instance.remove(GameOverSubState.instance.boyfriend);
+              GameOverSubState.instance.parentPlayState.currentStage.addCharacter(GameOverSubState.instance.boyfriend, CharacterType.BF);
+            }
+          }
+
+          GameOverSubState.instance.resetCameraZoom();
+          lockCamera = false;
+
+          if (GameOverSubState.instance.parentPlayState != null && GameOverSubState.instance.parentPlayState.camFollow != null)
+          {
+            FlxG.camera.target = GameOverSubState.instance.parentPlayState.camFollow;
+            FlxG.camera.snapToTarget();
+          }
+
+          detachOverlays();
+          GameOverSubState.instance.close();
+        });
+      });
+    }
+  }
+
+  public override function getDeathQuote():Null<String>
+  {
+    switch (PlayState.instance?.currentStage?.getDad()?.characterId)
+    {
+      case "collab/cg5/cg5-collab":
+        final language:String = Save.instance.modOptions.get(QtOptionsCategory.SAVE_KEY_LANG_QT);
+        if (cg5DeathLine == 0) cg5DeathLine = FlxG.random.int(1, cg5DeathLineCount);
+        return Paths.sound('qtgameover/$language/qt/cg5/CG5Gameover-$cg5DeathLine');
+      default:
+        return super.getDeathQuote();
+    }
+  }
+
+  public function playDeathQuote(quotePath:String):Void
+  {
+    final gameOver = GameOverSubState.instance;
+    if (gameOver == null || gameOver.isEnding) return;
+
+    final currentQuote = gameOver.deathQuoteSound;
+    if (currentQuote == null || currentQuote == FlxG.sound.music || !currentQuote.isPlaying)
+    {
+      gameOver.hasPlayedDeathQuote = true;
+      gameOver.deathQuoteSound = FunkinSound.playOnce(quotePath, 1.0, function() {
+        this.fadeMusic(1.0, 2.0);
+      }, null, true);
+      this.fadeMusic(0.5, 0.5);
+    }
+
+    final language:String = Save.instance.modOptions.get(QtOptionsCategory.SAVE_KEY_LANG_QT);
+    GameOverSubtitles.assignToQuote('subtitles/$language/gameover/qt/cg5/gameover-line-$cg5DeathLine');
+  }
+
+  public function fadeMusic(targetVolume:Float, duration:Float):Void
+  {
+    if (musicTween != null) musicTween.cancel();
+    musicTween = FlxTween.tween(GameOverSubState.instance.gameOverMusic, {volume: targetVolume}, duration, {ease: FlxEase.linear});
+  }
+
+  public override function onGameOver(event)
+  {
+    super.onGameOver(event);
+    retrySprite = createOverlaySprite();
+    smokeSprite = createOverlaySprite();
+
+    final fps:Float = this.animation.getByName('firstDeath')?.frameRate ?? 24.0;
+    retrySprite.anim.addByFrameLabel('firstDeath', 'Retry Intro', fps, false);
+    retrySprite.anim.addByFrameLabel('deathLoop', 'Retry Loop', fps, true);
+    smokeSprite.anim.addByFrameLabel('firstDeath', 'Smoke Boom', fps, false);
+
+    flashSprite = new FunkinSprite().makeSolidColor(Std.int(FlxG.width * 3.0), Std.int(FlxG.height * 3.0), FlxColor.WHITE);
+    flashSprite.scrollFactor.set(0, 0);
+    flashSprite.screenCenter();
+    flashSprite.visible = false;
+  }
+
+  public function createOverlaySprite():FunkinSprite
+  {
+    final overlay:FunkinSprite = FunkinSprite.createTextureAtlas(0, 0, 'characters/QT_assets/qt-playable/death', 'shared', this.getAtlasSettings());
+    overlay.visible = false;
+    overlay.flipX = this.flipX;
+    overlay.antialiasing = this.antialiasing;
+    overlay.scrollFactor.set(this.scrollFactor.x, this.scrollFactor.y);
+    return overlay;
+  }
+
+  public function captureIntroTransform():Void
+  {
+    introPos.set(this.x, this.y);
+    introOffset.set(this.offset.x, this.offset.y);
+    introOrigin.set(this.origin.x, this.origin.y);
+    introScale.set(this.scale.x, this.scale.y);
+  }
+
+  public function alignOverlay(overlay:FunkinSprite):Void
+  {
+    final jsonOffset:Array<Float> = this.animationOffsets.get(overlay.animation.name) ?? [0.0, 0.0];
+
+    overlay.x = introPos.x - jsonOffset[0];
+    overlay.y = introPos.y - jsonOffset[1];
+    overlay.scale.set(introScale.x, introScale.y);
+    overlay.origin.set(introOrigin.x, introOrigin.y);
+    overlay.offset.set(introOffset.x, introOffset.y);
+  }
+
+  public function playOverlay(overlay:FunkinSprite, animName:String):Void
+  {
+    overlay.visible = true;
+    overlay.animation.play(animName, true);
+    alignOverlay(overlay);
+  }
+
+  public function playConfirm(language:String, line:Int):Void
+  {
+    final languageName:String = language.charAt(0).toUpperCase() + language.substr(1);
+    final confirmAnim:String = 'deathConfirm$languageName-$line';
+
+    canPlayOtherAnims = true;
+    this.playAnimation(confirmAnim, true, false);
+
+    final fps:Float = this.animation.getByName(confirmAnim)?.frameRate ?? 24.0;
+    retrySprite.anim.addByFrameLabel(confirmAnim, 'Retry Confirm', fps, false);
+    playOverlay(retrySprite, confirmAnim);
+  }
+
+  public function prepareOverlays():Void
+  {
+    retrySprite.zIndex = this.zIndex + 1;
+    flashSprite.zIndex = this.zIndex + 2;
+    smokeSprite.zIndex = this.zIndex + 3;
+
+    final gameOver = GameOverSubState.instance;
+    gameOver.add(retrySprite);
+    gameOver.add(flashSprite);
+    gameOver.add(smokeSprite);
+  }
+
+  public function detachOverlays():Void
+  {
+    final gameOver = GameOverSubState.instance;
+    gameOver.remove(retrySprite);
+    gameOver.remove(flashSprite);
+    gameOver.remove(smokeSprite);
+  }
+
+  public function updateOverlays():Void
+  {
+    final isIntro:Bool = this.getCurrentAnimation() == 'firstDeath';
+
+    if (isIntro) captureIntroTransform();
+    final introFrame:Int = (isIntro && this.animation.curAnim != null) ? this.animation.curAnim.curFrame : -1;
+
+    flashSprite.visible = introFrame == 55;
+
+    if (lastIntroFrame < 56 && introFrame >= 56) playOverlay(smokeSprite, 'firstDeath');
+    if (lastIntroFrame < 72 && introFrame >= 72) playOverlay(retrySprite, 'firstDeath');
+    if (!hasActioned && lastIntroFrame < 73 && introFrame >= 73) startDeathLoop();
+    lastIntroFrame = introFrame;
+    if (retrySprite.visible) alignOverlay(retrySprite);
+    if (smokeSprite.visible) alignOverlay(smokeSprite);
+    if (retrySprite.visible && retrySprite.animation.finished)
+    {
+      if (retrySprite.animation.name == 'firstDeath') playOverlay(retrySprite, 'deathLoop');
+      else
+        retrySprite.visible = false;
+    }
+
+    if (smokeSprite.visible && smokeSprite.animation.finished) smokeSprite.visible = false;
+  }
+}

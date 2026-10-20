@@ -1,0 +1,34 @@
+{
+  "version": "2.2.4",
+  "songName": "GO GO GO (feat. Ironmouse)",
+  "artist": "CG5 + Ironmouse",
+  "charter": "FatzFries + CorySoddy",
+  "offsets": {},
+  "playData": {
+    "difficulties": ["easy", "normal", "hard"],
+    "characters": {
+      "player": "collab/cg5/qt-playable-collab",
+      "girlfriend": "collab/cg5/ironmouse-collab",
+      "opponent": "collab/cg5/cg5-collab"
+    },
+    "stage": "recordingStudio",
+    "noteStyle": "funkin",
+    "ratings": {
+      "easy": 2,
+      "normal": 3,
+      "hard": 4
+    },
+    "album": "cg5-collab",
+    "stickerPack": "qtStickers",
+    "previewEnd": 0
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.6",
+  "timeChanges": [
+    {
+      "t": 0,
+      "b": 0,
+      "bpm": 127,
+      "bt": [4, 4, 4, 4]
+    }
+  ]
+}

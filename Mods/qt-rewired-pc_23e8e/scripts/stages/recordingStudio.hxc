@@ -1,0 +1,278 @@
+package rewired.stages;
+
+import funkin.play.stage.Stage;
+import funkin.play.PlayState;
+import funkin.play.character.BaseCharacter;
+import funkin.play.character.CharacterType;
+import funkin.graphics.shaders.AdjustColorShader;
+import flixel.FlxSprite;
+import flixel.tweens.FlxTween;
+import flixel.tweens.FlxEase;
+import flixel.util.FlxColor;
+import openfl.display.BlendMode;
+import funkin.graphics.FunkinSprite;
+import funkin.util.FlxTweenUtil;
+import flixel.FlxG;
+
+class RecordingStudio extends Stage
+{
+  private var colorShader:AdjustColorShader;
+  private var lightShader:AdjustColorShader;
+  private var hasHidden:Bool = false;
+
+  private var whiteFadeSpr:FunkinSprite;
+  private var buildupTween:FlxTween;
+  private var isShaking:Bool = false;
+  private var shakeIntensity:Float = 0;
+
+  private final darkProps:Array<String> = [
+    'foregroundChairDark',
+    'deskDark',
+    'couchDark',
+    'chairDark',
+    'overlayGlowDark',
+    'lightDark',
+    'wallsDark'
+  ];
+
+  function new()
+  {
+    super('recordingStudio');
+  }
+
+  override function buildStage()
+  {
+    colorShader = new AdjustColorShader();
+    lightShader = new AdjustColorShader();
+
+    super.buildStage();
+
+    colorShader.brightness = 3;
+    colorShader.hue = 5;
+    colorShader.contrast = 3;
+    colorShader.saturation = 5;
+
+    var glow = getNamedProp('overlayGlowDark');
+    var lamp = getNamedProp('overlayLamp');
+    var light = getNamedProp('lightDark');
+
+    if (glow != null) glow.shader = lightShader;
+    if (lamp != null) lamp.shader = lightShader;
+    if (light != null) light.shader = lightShader;
+  }
+
+  public function enableDarkness():Void
+  {
+    for (propName in darkProps)
+    {
+      var prop = getNamedProp(propName);
+      if (prop != null) prop.alpha = 1.0;
+    }
+
+    colorShader.brightness = -95;
+    colorShader.hue = -20;
+    colorShader.contrast = -45;
+    colorShader.saturation = -21;
+
+    var chars = [getBoyfriend(), getDad(), getGirlfriend()];
+    for (c in chars)
+    {
+      if (c != null) c.color = 0xCDCDD1;
+    }
+  }
+
+  public function disableDarkness():Void
+  {
+    for (propName in darkProps)
+    {
+      var prop = getNamedProp(propName);
+      if (prop != null) prop.alpha = 0.0;
+    }
+
+    colorShader.brightness = 3;
+    colorShader.hue = 5;
+    colorShader.contrast = 3;
+    colorShader.saturation = 5;
+
+    var chars = [getBoyfriend(), getDad(), getGirlfriend()];
+    for (c in chars)
+    {
+      if (c != null) c.color = 0xFFFFFF;
+    }
+  }
+
+  public function setLightHueLinear(targetHue:Float, duration:Float):Void
+  {
+    FlxTween.cancelTweensOf(lightShader);
+    if (duration <= 0)
+    {
+      lightShader.hue = targetHue;
+    }
+    else
+    {
+      FlxTween.tween(lightShader, {hue: targetHue}, duration, {ease: FlxEase.linear});
+    }
+  }
+
+  public function setLightHueInstant(targetHue:Float, duration:Float):Void
+  {
+    FlxTween.cancelTweensOf(lightShader);
+    lightShader.hue = targetHue;
+
+    lightShader.brightness = 30;
+
+    if (duration > 0)
+    {
+      FlxTween.tween(lightShader, {brightness: 0}, duration, {ease: FlxEase.quadOut});
+    }
+    else
+    {
+      lightShader.brightness = 0;
+    }
+  }
+
+  public function enableBlackScreen():Void
+  {
+    if (PlayState.instance != null && PlayState.instance.camGame != null) PlayState.instance.camGame.fade(FlxColor.BLACK, 0.001, false, null, true);
+  }
+
+  public function disableBlackScreen():Void
+  {
+    if (PlayState.instance != null && PlayState.instance.camGame != null) PlayState.instance.camGame.fade(FlxColor.BLACK, 0.001, true, null, true);
+  }
+
+  public function whiteFlash(duration:Float):Void
+  {
+    var flashSpr = new FunkinSprite().makeSolidColor(Std.int(FlxG.width * 3.0), Std.int(FlxG.height * 3.0), FlxColor.WHITE);
+    flashSpr.scrollFactor.set(0, 0);
+    flashSpr.screenCenter();
+    flashSpr.blend = BlendMode.OVERLAY;
+    flashSpr.cameras = [PlayState.instance.camGame];
+    flashSpr.alpha = 0.8;
+
+    flashSpr.zIndex = 100000;
+    add(flashSpr);
+
+    refresh();
+
+    if (duration > 0)
+    {
+      FlxTween.tween(flashSpr, {alpha: 0}, duration,
+        {
+          ease: FlxEase.expoOut,
+          onComplete: function(_) {
+            remove(flashSpr);
+            flashSpr.destroy();
+          }
+        });
+    }
+    else
+    {
+      remove(flashSpr);
+      flashSpr.destroy();
+    }
+  }
+
+  public function startOutroBuildup(duration:Float):Void
+  {
+    whiteFadeSpr = new FunkinSprite().makeSolidColor(Std.int(FlxG.width * 3.0), Std.int(FlxG.height * 3.0), FlxColor.WHITE);
+    whiteFadeSpr.scrollFactor.set(0, 0);
+    whiteFadeSpr.screenCenter();
+    whiteFadeSpr.cameras = [PlayState.instance.camGame];
+    whiteFadeSpr.blend = BlendMode.OVERLAY;
+    whiteFadeSpr.alpha = 0;
+    whiteFadeSpr.zIndex = 99990;
+    add(whiteFadeSpr);
+    refresh();
+
+    FlxTween.tween(whiteFadeSpr, {alpha: 0.5}, duration, {ease: FlxEase.linear});
+
+    isShaking = true;
+    shakeIntensity = 0;
+
+    buildupTween = FlxTween.num(0, 0.0125, duration, {ease: FlxEase.expoIn}, function(val:Float) {
+      shakeIntensity = val;
+    });
+  }
+
+  public function stopOutroBuildup():Void
+  {
+    isShaking = false;
+    shakeIntensity = 0;
+
+    if (PlayState.instance != null && PlayState.instance.camGame != null)
+    {
+      PlayState.instance.camGame.shake(0, 0, null, true);
+    }
+
+    if (buildupTween != null)
+    {
+      buildupTween.cancel();
+      buildupTween = null;
+    }
+
+    if (whiteFadeSpr != null)
+    {
+      FlxTween.cancelTweensOf(whiteFadeSpr);
+      remove(whiteFadeSpr);
+      whiteFadeSpr.destroy();
+      whiteFadeSpr = null;
+    }
+  }
+
+  override function onSongLoaded(event)
+  {
+    super.onSongLoaded(event);
+    PlayState.instance.remove(PlayState.instance.comboPopUps);
+
+    if (PlayState.instance.opponentStrumline != null)
+    {
+      PlayState.instance.opponentStrumline.visible = false;
+    }
+  }
+
+  override function onUpdate(event)
+  {
+    super.onUpdate(event);
+    if (!hasHidden)
+    {
+      hasHidden = true;
+      hideOpponentStrumline();
+    }
+
+    if (isShaking && shakeIntensity > 0 && PlayState.instance != null && PlayState.instance.camGame != null)
+    {
+      PlayState.instance.camGame.shake(shakeIntensity, 0.1, null, true);
+    }
+  }
+
+  function hideOpponentStrumline()
+  {
+    var opponentStrumline:FlxSprite = PlayState.instance.opponentStrumline;
+    if (opponentStrumline != null)
+    {
+      for (arrow in opponentStrumline.members)
+      {
+        arrow.visible = false;
+      }
+    }
+  }
+
+  override function addCharacter(character:BaseCharacter, charType:CharacterType):Void
+  {
+    super.addCharacter(character, charType);
+    character.shader = colorShader;
+  }
+
+  override public function onPause(event:PauseScriptEvent):Void
+  {
+    super.onPause(event);
+    FlxTweenUtil.pauseTweensOf(lightShader);
+  }
+
+  override public function onResume(event:ScriptEvent):Void
+  {
+    super.onResume(event);
+    FlxTweenUtil.resumeTweensOf(lightShader);
+  }
+}

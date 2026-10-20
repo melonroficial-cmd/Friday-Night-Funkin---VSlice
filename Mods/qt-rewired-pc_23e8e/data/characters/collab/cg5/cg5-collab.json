@@ -1,0 +1,106 @@
+{
+  "version": "1.0.0",
+  "name": "CG5 (GO GO GO)",
+  "assetPath": "shared:characters/go-go-go/cg5",
+  "renderType": "multianimateatlas",
+  "offsets": [10, 7],
+  "cameraOffsets": [0, 192],
+  "scale": 1.04,
+  "healthIcon": {
+    "id": "cg5-collab",
+    "scale": 1.1,
+    "offsets": [-10, 0]
+  },
+  "animations": [
+    {
+      "name": "idle",
+      "prefix": "Idle",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singLEFT-lipsync",
+      "prefix": "Left Lip Sync",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singDOWN-lipsync",
+      "prefix": "Down Lip Sync",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singUP-lipsync",
+      "prefix": "Up Lip Sync",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singRIGHT-lipsync",
+      "prefix": "Right Lip Sync",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singLEFTmiss-lipsync",
+      "prefix": "Left Lip Sync Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singDOWNmiss-lipsync",
+      "prefix": "Down Lip Sync Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singUPmiss-lipsync",
+      "prefix": "Up Lip Sync Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singRIGHTmiss-lipsync",
+      "prefix": "Right Lip Sync Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singLEFT",
+      "prefix": "Left",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singDOWN",
+      "prefix": "Down",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singUP",
+      "prefix": "Up",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singRIGHT",
+      "prefix": "Right",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singLEFTmiss",
+      "prefix": "Left Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singDOWNmiss",
+      "prefix": "Down Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singUPmiss",
+      "prefix": "Up Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singRIGHTmiss",
+      "prefix": "Right Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "clap",
+      "prefix": "Clap",
+      "offsets": [0, 0]
+    }
+  ]
+}

@@ -1,0 +1,282 @@
+package rewired.characters;
+
+import funkin.play.character.MultiAnimateAtlasCharacter;
+import funkin.graphics.FunkinSprite;
+import flixel.system.FlxAssets.FlxShader;
+import animate.internal.elements.FlxSpriteElement;
+import funkin.Conductor;
+
+typedef TailData =
+{
+  offsetX:Float,
+  offsetY:Float
+}
+
+typedef LipSyncPoseData =
+{
+  offsetX:Float,
+  offsetY:Float,
+  angle:Float
+}
+
+class IronmouseCollabCharacter extends MultiAnimateAtlasCharacter
+{
+  var tail:FunkinSprite;
+  var lipSync:FunkinSprite;
+  var currentShader:FlxShader = null;
+
+  var tailGlobalOffsetX:Float = 2;
+  var tailGlobalOffsetY:Float = 68;
+
+  var customLipScaleX:Float = 1;
+  var customLipScaleY:Float = 1;
+
+  final TAIL_OFFSETS:Map<String, TailData> = [
+    "singLEFT" => {offsetX: 5, offsetY: -9.5},
+    "singLEFT-beautiful" => {offsetX: 5, offsetY: -9.5},
+    "singLEFT-cool" => {offsetX: 5, offsetY: -10},
+    "singDOWN" => {offsetX: -4, offsetY: 6},
+    "singDOWN-beautiful" => {offsetX: -4, offsetY: 6},
+    "singDOWN-cool" => {offsetX: -8, offsetY: 14},
+    "singDOWN-go" => {offsetX: -8, offsetY: 14},
+    "singUP" => {offsetX: 8, offsetY: -15},
+    "singUP-beautiful" => {offsetX: 8, offsetY: -15},
+    "singUP-cool" => {offsetX: 1, offsetY: -1.5},
+    "mistakeAnimation" => {offsetX: 12, offsetY: -24},
+    "singRIGHT" => {offsetX: -2, offsetY: 7},
+    "singRIGHT-beautiful" => {offsetX: -2, offsetY: 7},
+    "singRIGHT-cool" => {offsetX: -20, offsetY: 29}
+  ];
+
+  final LIP_SYNC_OFFSETS:Map<String, LipSyncPoseData> = [
+    "singLEFT" => {offsetX: -43.5, offsetY: -75, angle: -0.2},
+    "singDOWN" => {offsetX: -45, offsetY: -74.5, angle: 0.3},
+    "singUP" => {offsetX: -42, offsetY: -76.5, angle: -0.8},
+    "singRIGHT" => {offsetX: -42, offsetY: -77, angle: 0.2},
+    "singLEFTmiss" => {offsetX: -43.5, offsetY: -74.5, angle: -0.2},
+    "singDOWNmiss" => {offsetX: -45, offsetY: -73, angle: 0.3},
+    "singUPmiss" => {offsetX: -42, offsetY: -76, angle: -0.8},
+    "singRIGHTmiss" => {offsetX: -42, offsetY: -76.5, angle: 0.2},
+    "singLEFT-beautiful" => {offsetX: -43.5, offsetY: -74.5, angle: -0.2},
+    "singDOWN-beautiful" => {offsetX: -45, offsetY: -73, angle: 0.3},
+    "singUP-beautiful" => {offsetX: -42, offsetY: -76, angle: -0.8},
+    "singRIGHT-beautiful" => {offsetX: -42, offsetY: -76.5, angle: 0.2},
+    "singLEFTmiss-beautiful" => {offsetX: -43.5, offsetY: -74.5, angle: -0.2},
+    "singDOWNmiss-beautiful" => {offsetX: -45, offsetY: -73, angle: 0.3},
+    "singUPmiss-beautiful" => {offsetX: -42, offsetY: -76, angle: -0.8},
+    "singRIGHTmiss-beautiful" => {offsetX: -42, offsetY: -76.5, angle: 0.2},
+    "singLEFT-cool" => {offsetX: -43.25, offsetY: -75, angle: -0.8},
+    "singDOWN-cool" => {offsetX: -46.75, offsetY: -71, angle: -0.6},
+    "singUP-cool" => {offsetX: -44, offsetY: -74.75, angle: 0.2},
+    "singRIGHT-cool" => {offsetX: -43.75, offsetY: -75, angle: -0.4},
+    "singDOWN-go" => {offsetX: -46.75, offsetY: -71, angle: -0.6},
+    "singLEFTmiss-cool" => {offsetX: -43.25, offsetY: -75, angle: -0.8},
+    "singDOWNmiss-cool" => {offsetX: -46.75, offsetY: -71, angle: -0.6},
+    "singUPmiss-cool" => {offsetX: -44, offsetY: -74.75, angle: 0.2},
+    "singRIGHTmiss-cool" => {offsetX: -43.75, offsetY: -75, angle: -0.4},
+    "mistakeAnimation" => {offsetX: -40.75, offsetY: -78, angle: -0.6},
+    "stayAnimation" => {offsetX: -47, offsetY: -72, angle: 1.2}
+  ];
+
+  public function new()
+  {
+    super('collab/cg5/ironmouse-collab');
+  }
+
+  public override function onCreate(event:ScriptEvent):Void
+  {
+    super.onCreate(event);
+
+    tail = FunkinSprite.createTextureAtlas(0, 0, "characters/go-go-go/tail-ironmouse", "shared");
+
+    var prefixes:Array<String> = ["Wiggle Loop"];
+
+    for (prefix in prefixes)
+    {
+      tail.animation.addByPrefix(prefix, prefix, 24, true);
+    }
+
+    tail.animation.play("Wiggle Loop", true);
+
+    var element:FlxSpriteElement = new FlxSpriteElement(tail);
+    element.active = false;
+
+    for (frame in this.getFramesWithKeyword("Tail Placeholder"))
+    {
+      frame.elements.splice(0, frame.elements.length);
+      frame.add(element);
+    }
+
+    lipSync = FunkinSprite.createTextureAtlas(0, 0, "characters/go-go-go/lipsync-ironmouse", "shared");
+    lipSync.animation.addByPrefix("Lip Sync Full", "Lip Sync Full", 24, false);
+    lipSync.animation.play("Lip Sync Full", true);
+
+    if (lipSync.animation.curAnim != null)
+    {
+      lipSync.animation.curAnim.paused = true;
+    }
+
+    lipSync.scale.set(customLipScaleX, customLipScaleY);
+
+    var lipSyncElement:FlxSpriteElement = new FlxSpriteElement(lipSync);
+    lipSyncElement.active = false;
+
+    for (frame in this.getFramesWithKeyword("Mouth Placeholder"))
+    {
+      frame.elements.splice(0, frame.elements.length);
+      frame.add(lipSyncElement);
+    }
+
+    setIdleState('idle');
+  }
+
+  public override function onUpdate(event:UpdateScriptEvent):Void
+  {
+    super.onUpdate(event);
+
+    synchronizeShader();
+    applyLipSyncPose();
+
+    if (tail != null)
+    {
+      tail.update(event.elapsed);
+
+      if (tail.animation.curAnim == null || tail.animation.curAnim.finished)
+      {
+        tail.animation.play("Wiggle Loop", true);
+      }
+    }
+
+    if (lipSync != null)
+    {
+      lipSync.update(event.elapsed);
+
+      if (lipSync.animation.curAnim != null && Conductor.instance != null)
+      {
+        var songTime:Float = Conductor.instance.songPosition;
+        if (songTime < 0) songTime = 0;
+
+        var targetFrame:Int = Std.int((songTime / 1000) * lipSync.animation.curAnim.frameRate);
+
+        if (targetFrame >= lipSync.animation.curAnim.numFrames)
+        {
+          targetFrame = lipSync.animation.curAnim.numFrames - 1;
+        }
+
+        if (lipSync.animation.curAnim.curFrame != targetFrame)
+        {
+          lipSync.animation.curAnim.curFrame = targetFrame;
+        }
+      }
+    }
+  }
+
+  function synchronizeShader():Void
+  {
+    if (currentShader == this.shader) return;
+
+    currentShader = cast this.shader;
+    if (tail != null) tail.shader = currentShader;
+    if (lipSync != null) lipSync.shader = currentShader;
+  }
+
+  public override function playAnimation(name:String, restart:Bool = false, ignoreOther:Bool = false, reversed:Bool = false):Void
+  {
+    super.playAnimation(name, restart, ignoreOther, reversed);
+
+    if (tail != null)
+    {
+      var tailOffsetX:Float = 0;
+      var tailOffsetY:Float = 0;
+
+      var data:TailData = TAIL_OFFSETS.get(name);
+      if (data != null)
+      {
+        tailOffsetX = data.offsetX;
+        tailOffsetY = data.offsetY;
+      }
+
+      tail.offset.set(tailOffsetX + tailGlobalOffsetX, tailOffsetY + tailGlobalOffsetY);
+
+      if (tail.frameWidth > 0 && tail.frameHeight > 0)
+      {
+        tail.origin.set((tail.frameWidth * 0.5) + tail.offset.x, (tail.frameHeight * 0.5) + tail.offset.y);
+      }
+    }
+
+    applyLipSyncPose();
+  }
+
+  public function setIdleState(state:String):Void
+  {
+    this.danceEvery = 1;
+    switch (state)
+    {
+      case 'dance1':
+        this.shouldAlternate = true;
+        this.idleSuffix = '-1';
+
+      case 'dance2':
+        this.shouldAlternate = true;
+        this.idleSuffix = '-2';
+
+      case 'danceCool1':
+        this.shouldAlternate = true;
+        this.idleSuffix = 'Cool-1';
+
+      case 'danceCool2':
+        this.shouldAlternate = true;
+        this.idleSuffix = 'Cool-2';
+
+      case 'idleCool':
+        this.shouldAlternate = false;
+        this.idleSuffix = '-cool';
+
+      default:
+        this.shouldAlternate = false;
+        this.idleSuffix = '';
+    }
+  }
+
+  public override function resetCharacter(resetCamera:Bool):Void
+  {
+    super.resetCharacter(resetCamera);
+
+    setIdleState('idle');
+  }
+
+  function applyLipSyncPose():Void
+  {
+    if (lipSync == null) return;
+
+    var poseOffsetX:Float = 0;
+    var poseOffsetY:Float = 0;
+    var poseAngle:Float = 0;
+
+    var data:LipSyncPoseData = getLipSyncPose(this.getCurrentAnimation());
+    if (data != null)
+    {
+      poseOffsetX = data.offsetX;
+      poseOffsetY = data.offsetY;
+      poseAngle = data.angle;
+    }
+
+    lipSync.offset.set(poseOffsetX, poseOffsetY);
+    lipSync.angle = poseAngle;
+
+    if (lipSync.frameWidth > 0 && lipSync.frameHeight > 0)
+    {
+      lipSync.origin.set((lipSync.frameWidth * 0.5) + lipSync.offset.x, (lipSync.frameHeight * 0.5) + lipSync.offset.y);
+    }
+  }
+
+  function getLipSyncPose(animationName:String):LipSyncPoseData
+  {
+    if (animationName == null) return null;
+
+    var data:LipSyncPoseData = LIP_SYNC_OFFSETS.get(animationName);
+    if (data != null) return data;
+
+    return LIP_SYNC_OFFSETS.get(animationName.split("miss").join(""));
+  }
+}

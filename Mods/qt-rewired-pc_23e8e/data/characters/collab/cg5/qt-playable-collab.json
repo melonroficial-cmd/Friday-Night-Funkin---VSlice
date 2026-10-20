@@ -1,0 +1,90 @@
+{
+  "version": "1.0.0",
+  "name": "QT (Playable) [GO GO GO]",
+  "assetPath": "shared:characters/QT_assets/qt-playable",
+  "renderType": "multianimateatlas",
+  "offsets": [-15, 3.5],
+  "cameraOffsets": [8, 30],
+  "flipX": true,
+  "healthIcon": {
+    "id": "qt-player",
+    "offsets": [7.5, -8]
+  },
+  "animations": [
+    {
+      "name": "idle",
+      "prefix": "Idle",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singLEFT",
+      "prefix": "Left",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singDOWN",
+      "prefix": "Down",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singUP",
+      "prefix": "Up",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singRIGHT",
+      "prefix": "Right",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "hey",
+      "prefix": "Hey",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singLEFTmiss",
+      "prefix": "Left Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singDOWNmiss",
+      "prefix": "Down Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singUPmiss",
+      "prefix": "Up Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singRIGHTmiss",
+      "prefix": "Right Miss",
+      "offsets": [0, 0]
+    },
+    {
+      "assetPath": "shared:characters/QT_assets/qt-playable/death",
+      "name": "firstDeath",
+      "prefix": "Intro",
+      "offsets": [140, 405]
+    },
+    {
+      "assetPath": "shared:characters/QT_assets/qt-playable/death",
+      "name": "deathLoop",
+      "prefix": "Loop",
+      "looped": true,
+      "offsets": [140, 405]
+    },
+    {
+      "assetPath": "shared:characters/QT_assets/qt-playable/death",
+      "name": "deathConfirmEnglish-1",
+      "prefix": "Confirm English 1",
+      "offsets": [140, 405]
+    },
+    {
+      "assetPath": "shared:characters/QT_assets/qt-playable/death",
+      "name": "deathConfirmSpanish-1",
+      "prefix": "Confirm Spanish 1",
+      "offsets": [140, 405]
+    }
+  ]
+}

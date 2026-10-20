@@ -1,0 +1,169 @@
+package rewired.characters;
+
+import funkin.play.character.MultiAnimateAtlasCharacter;
+import funkin.graphics.FunkinSprite;
+import flixel.system.FlxAssets.FlxShader;
+import animate.internal.elements.FlxSpriteElement;
+import funkin.Conductor;
+
+typedef LipSyncPoseData =
+{
+  offsetX:Float,
+  offsetY:Float,
+  angle:Float
+}
+
+class CG5CollabCharacter extends MultiAnimateAtlasCharacter
+{
+  var lipSync:FunkinSprite;
+  var currentShader:FlxShader = null;
+
+  var customLipScaleX:Float = 1.06;
+  var customLipScaleY:Float = 1.06;
+
+  final LIP_SYNC_OFFSETS:Map<String, LipSyncPoseData> = [
+    "singLEFT-lipsync" => {offsetX: -37, offsetY: -42.5, angle: 0.2},
+    "singDOWN-lipsync" => {offsetX: -36, offsetY: -43.5, angle: 0.8},
+    "singUP-lipsync" => {offsetX: -32, offsetY: -48, angle: 0.1},
+    "singRIGHT-lipsync" => {offsetX: -31, offsetY: -49, angle: -0.2}
+  ];
+
+  public function new()
+  {
+    super('collab/cg5/cg5-collab');
+  }
+
+  public override function onCreate(event:ScriptEvent):Void
+  {
+    super.onCreate(event);
+
+    lipSync = FunkinSprite.createTextureAtlas(0, 0, "characters/go-go-go/lipsync-cg5", "shared");
+    lipSync.animation.addByPrefix("Lip Sync Full", "Lip Sync Full", 24, false);
+    lipSync.animation.play("Lip Sync Full", true);
+
+    if (lipSync.animation.curAnim != null)
+    {
+      lipSync.animation.curAnim.paused = true;
+    }
+
+    lipSync.scale.set(customLipScaleX, customLipScaleY);
+
+    var element:FlxSpriteElement = new FlxSpriteElement(lipSync);
+    element.active = false;
+
+    hideLipSyncPlaceholder();
+
+    for (frame in this.getFramesWithKeyword("mouth lipsync placeholder"))
+    {
+      var i:Int = frame.elements.length - 1;
+      while (i >= 0)
+      {
+        if (Std.isOfType(frame.elements[i], FlxSpriteElement))
+        {
+          frame.elements.splice(i, 1);
+        }
+        i--;
+      }
+
+      frame.add(element);
+    }
+  }
+
+  public override function onUpdate(event:UpdateScriptEvent):Void
+  {
+    super.onUpdate(event);
+
+    synchronizeShader();
+    applyLipSyncPose();
+
+    if (lipSync != null)
+    {
+      lipSync.update(event.elapsed);
+
+      if (lipSync.animation.curAnim != null && Conductor.instance != null)
+      {
+        var songTime:Float = Conductor.instance.songPosition;
+        if (songTime < 0) songTime = 0;
+
+        var targetFrame:Int = Std.int((songTime / 1000) * lipSync.animation.curAnim.frameRate);
+
+        if (targetFrame >= lipSync.animation.curAnim.numFrames)
+        {
+          targetFrame = lipSync.animation.curAnim.numFrames - 1;
+        }
+
+        if (lipSync.animation.curAnim.curFrame != targetFrame)
+        {
+          lipSync.animation.curAnim.curFrame = targetFrame;
+        }
+      }
+    }
+  }
+
+  function synchronizeShader():Void
+  {
+    if (currentShader == this.shader) return;
+
+    currentShader = cast this.shader;
+    if (lipSync != null) lipSync.shader = currentShader;
+  }
+
+  public override function playAnimation(name:String, restart:Bool = false, ignoreOther:Bool = false, reversed:Bool = false):Void
+  {
+    super.playAnimation(name, restart, ignoreOther, reversed);
+
+    applyLipSyncPose();
+  }
+
+  function applyLipSyncPose():Void
+  {
+    if (lipSync == null) return;
+
+    var poseOffsetX:Float = 0;
+    var poseOffsetY:Float = 0;
+    var poseAngle:Float = 0;
+
+    var data:LipSyncPoseData = getLipSyncPose(this.getCurrentAnimation());
+    if (data != null)
+    {
+      poseOffsetX = data.offsetX;
+      poseOffsetY = data.offsetY;
+      poseAngle = data.angle;
+    }
+
+    lipSync.offset.set(poseOffsetX, poseOffsetY);
+    lipSync.angle = poseAngle;
+
+    if (lipSync.frameWidth > 0 && lipSync.frameHeight > 0)
+    {
+      lipSync.origin.set((lipSync.frameWidth * 0.5) + lipSync.offset.x, (lipSync.frameHeight * 0.5) + lipSync.offset.y);
+    }
+  }
+
+  function getLipSyncPose(animationName:String):LipSyncPoseData
+  {
+    if (animationName == null) return null;
+
+    var data:LipSyncPoseData = LIP_SYNC_OFFSETS.get(animationName);
+    if (data != null) return data;
+
+    return LIP_SYNC_OFFSETS.get(animationName.split("miss").join(""));
+  }
+
+  function hideLipSyncPlaceholder():Void
+  {
+    var symbolItem = this.library.getSymbol('mouth lipsync placeholder');
+    if (symbolItem != null)
+    {
+      var layer = symbolItem.timeline.getLayer(0);
+      if (layer != null)
+      {
+        layer.forEachFrame(function(frame) {
+          frame.forEachElement(function(element) {
+            element.visible = false;
+          });
+        });
+      }
+    }
+  }
+}

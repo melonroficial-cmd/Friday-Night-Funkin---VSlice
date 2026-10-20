@@ -1,0 +1,42 @@
+{
+  "version": "1.0.0",
+  "name": "ROCKIN' THEM BEATS",
+  "capsule": {
+    "name": "CG5 COLLAB"
+  },
+  "titleAsset": "storymenu/titles/cg5-collab",
+  "props": [
+    {
+      "assetPath": "storymenu/props/CG5",
+      "scale": 0.465,
+      "offsets": [-130, -165],
+      "animations": [
+        {
+          "name": "idle",
+          "prefix": "idle",
+          "frameRate": 24
+        }
+      ]
+    },
+    {
+      "assetPath": "storymenu/props/QT-player",
+      "scale": 0.83,
+      "offsets": [120, 34],
+      "animations": [
+        {
+          "name": "idle",
+          "prefix": "idle",
+          "frameRate": 24
+        },
+        {
+          "name": "confirm",
+          "prefix": "confirm",
+          "offsets": [-32, -10],
+          "frameRate": 24
+        }
+      ]
+    }
+  ],
+  "background": "#ff2882",
+  "songs": ["go-go-go"]
+}

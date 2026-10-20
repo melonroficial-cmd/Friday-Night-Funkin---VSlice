@@ -1,0 +1,81 @@
+package rewired.modules.playstate;
+
+import flixel.FlxG;
+import funkin.play.components.SubtitlesAlignment;
+import funkin.play.components.Subtitles;
+import funkin.play.GameOverSubState;
+import funkin.modding.module.Module;
+import funkin.play.PlayState;
+
+class GameOverSubtitles extends Module
+{
+  /**
+   * Singleton instance for this module.
+   */
+  public static var instance:GameOverSubtitles;
+
+  public var subtitles:Subtitles;
+
+  var queuedQuote:String = null;
+
+  public function new()
+  {
+    super('GameOverSubtitles', 999);
+  }
+
+  override public function onCreate(event:ScriptEvent):Void
+  {
+    super.onCreate(event);
+    GameOverSubtitles.instance = this;
+  }
+
+  override public function onSubStateOpenEnd(event:SubStateScriptEvent):Void
+  {
+    super.onSubStateOpenEnd(event);
+
+    if (event.targetState != GameOverSubState.instance) return;
+    if (!Preferences.subtitles) return;
+
+    subtitles = new Subtitles(0, 139 + (FlxG.onMobile ? 410.8 : 0), SubtitlesAlignment.SUBTITLES_BOTTOM);
+    subtitles.setText([''], true);
+    subtitles.cameras = [PlayState.instance?.camSubtitles];
+    GameOverSubState.instance.add(subtitles);
+  }
+
+  override public function onUpdate(event:UpdateScriptEvent):Void
+  {
+    super.onUpdate(event);
+    if (subtitles == null) return;
+
+    if (GameOverSubState.instance?.deathQuoteSound != null && queuedQuote != null)
+    {
+      subtitles.assignSubtitles(queuedQuote, GameOverSubState.instance.deathQuoteSound);
+      queuedQuote = null;
+
+      // Please stop crashing thank you
+      final quoteSound = GameOverSubState.instance.deathQuoteSound;
+      final previousOnComplete = quoteSound.onComplete;
+      quoteSound.onComplete = function() {
+        if (previousOnComplete != null) previousOnComplete();
+        if (subtitles != null && subtitles.exists) subtitles.kill();
+      };
+    }
+  }
+
+  override public function onSubStateCloseEnd(event:SubStateScriptEvent):Void
+  {
+    super.onSubStateCloseEnd(event);
+    if (event.targetState != GameOverSubState.instance) return;
+
+    subtitles = null;
+    queuedQuote = null;
+  }
+
+  public static function assignToQuote(filePath:String):Void
+  {
+    if (instance?.subtitles == null) return;
+    instance.subtitles.revive();
+    instance.subtitles.setText([], true);
+    instance.queuedQuote = filePath;
+  }
+}

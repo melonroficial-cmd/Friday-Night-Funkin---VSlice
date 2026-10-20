@@ -1,0 +1,61 @@
+package rewired.modules;
+
+import funkin.modding.module.Module;
+import funkin.data.story.level.LevelRegistry;
+import funkin.ui.story.StoryMenuState;
+
+// comedy lost strikes AGAIN
+class MoveCollabWeek extends Module
+{
+  var collabWeek = ['CG5Collab'];
+
+  public function new()
+  {
+    super('rewired-move-collab', 1, {state: StoryMenuState});
+  }
+
+  override function onStateChangeEnd(event)
+  {
+    super.onStateChangeEnd(event);
+
+    insertAfterWeek('QTWeek', collabWeek);
+  }
+
+  function insertAfterWeek(weekName:String, songs:Array<String>)
+  {
+    var state = FlxG.state;
+    var levels = [];
+    for (item in state.levelList.copy())
+    {
+      if (songs.contains(item))
+      {
+        state.levelList.remove(item);
+        levels.push(item);
+      }
+    }
+    var hasSeenWeek = false;
+    for (level in state.levelList)
+    {
+      if (level == weekName && !hasSeenWeek) hasSeenWeek = true;
+      if (hasSeenWeek && level != weekName)
+      {
+        for (item in levels)
+        {
+          state.levelList.insert(state.levelList.indexOf(level), item);
+        }
+        levels = [];
+        break;
+      }
+    }
+    if (levels.length > 0)
+    {
+      for (item in levels)
+      {
+        state.levelList.push(item);
+      }
+    }
+    state.updateData();
+    state.buildLevelTitles();
+    state.changeLevel();
+  }
+}

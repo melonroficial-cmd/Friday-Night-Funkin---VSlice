@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="cg5-collabpixel.png">
+	<!-- Created with Adobe Animate version 22.0.3.179 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="confirm-hold0000" x="2" y="63" width="72" height="59" frameX="30" frameY="9" frameWidth="72" frameHeight="59"/>
+	<SubTexture name="confirm0002" x="2" y="63" width="72" height="59" frameX="30" frameY="9" frameWidth="72" frameHeight="59"/>
+	<SubTexture name="confirm0001" x="76" y="2" width="72" height="59" frameX="30" frameY="9" frameWidth="72" frameHeight="59"/>
+	<SubTexture name="confirm0000" x="2" y="2" width="72" height="59" frameX="30" frameY="5" frameWidth="72" frameHeight="59"/>
+	<SubTexture name="idle0000" x="76" y="63" width="72" height="59" frameX="30" frameY="5" frameWidth="72" frameHeight="59"/>
+</TextureAtlas>
